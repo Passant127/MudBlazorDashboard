@@ -10,8 +10,4 @@
     <ProjectReference Include="..\Dashboard.Infrastrcuture\Dashboard.Infrastrcuture.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Entities\" />
-  </ItemGroup>
-
 </Project>
