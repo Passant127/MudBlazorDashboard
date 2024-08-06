@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace  Clinic.Core.Result ;
+namespace  Dashboard.Core.Result ;
 
 public class Result<T> : IResult
 {

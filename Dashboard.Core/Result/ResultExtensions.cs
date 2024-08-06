@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace  Clinic.Core.Result;
+namespace  Dashboard.Core.Result;
 
 public static class ResultExtensions
 {

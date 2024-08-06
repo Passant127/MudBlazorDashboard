@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 
 
-namespace Clinic.Core.Result;
+namespace Dashboard.Core.Result;
 
 public interface IResult
 {

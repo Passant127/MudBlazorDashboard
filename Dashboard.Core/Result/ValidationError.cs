@@ -1,4 +1,4 @@
-﻿namespace Clinic.Core.Result;
+﻿namespace Dashboard.Core.Result;
 
 public class ValidationError
 {

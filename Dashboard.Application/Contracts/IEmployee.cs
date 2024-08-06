@@ -1,4 +1,4 @@
-﻿using Clinic.Core.Result;
+﻿using Dashboard.Core.Result;
 using Dashboard.Application.DTOS.EmployeeDtos;
 using System;
 using System.Collections.Generic;
