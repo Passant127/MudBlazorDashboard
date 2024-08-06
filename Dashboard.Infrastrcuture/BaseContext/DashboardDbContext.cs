@@ -29,6 +29,7 @@ public class DashboardDbContext : DbContext
 
         base.OnModelCreating(builder);
     }
+
     public DbSet<Employee> Employees { get; set; }
 
 
