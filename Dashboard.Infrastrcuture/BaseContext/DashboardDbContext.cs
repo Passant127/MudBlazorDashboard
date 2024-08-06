@@ -1,4 +1,5 @@
 ﻿
+using Dashboard.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -12,7 +13,8 @@ namespace Dashboard.Infrastrcuture.BaseContext;
 
 public class DashboardDbContext : DbContext
 {
-    public DashboardDbContext(DbContextOptions dbContext) : base(dbContext)
+
+    public DashboardDbContext(DbContextOptions<DashboardDbContext> dbContext) : base(dbContext)
     {
         
     }
@@ -24,7 +26,7 @@ public class DashboardDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder builder)
     {
 
-        builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+        //builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
         base.OnModelCreating(builder);
     }

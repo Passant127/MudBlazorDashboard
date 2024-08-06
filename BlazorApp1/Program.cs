@@ -1,8 +1,13 @@
 using BlazorApp1.Services.Articles;
 using BlazorApp1.Services.Notifications;
 using Blazored.LocalStorage;
+using Dashboard.Application.Contracts;
+using Dashboard.Application.Mapping;
+using Dashboard.Application.Services;
+using Dashboard.Infrastrcuture.BaseContext;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.EntityFrameworkCore;
 using MudBlazor;
 using MudBlazor.Services;
 using Toolbelt.Blazor.Extensions.DependencyInjection;
@@ -42,9 +47,12 @@ builder.Services.AddMudServices(config =>
     config.SnackbarConfiguration.SnackbarVariant = Variant.Filled;
 });
 
+builder.Services.AddDbContext<DashboardDbContext>(options => options.UseLazyLoadingProxies().UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly("Dashboard.Infrastrcuture")));
 // Register your custom services
 builder.Services.AddTransient<INotificationsService, NotificationsService>();
 builder.Services.AddTransient<IArticlesService, ArticlesService>();
+builder.Services.AddTransient<IEmployeeService, EmployeeService>();
+builder.Services.AddAutoMapper(typeof(MappingProfile));
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

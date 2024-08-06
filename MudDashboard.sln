@@ -5,15 +5,13 @@ VisualStudioVersion = 17.9.34728.123
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorApp1", "BlazorApp1\BlazorApp1.csproj", "{A254286B-7991-4297-813E-96D1DFB4ACDB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APIDashboardTest", "APIDashboardTest\APIDashboardTest.csproj", "{1C00280C-0CDC-4F28-B4E5-281B98392552}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dashboard.Domain", "Dashboard.Domain\Dashboard.Domain.csproj", "{12DF1B3A-B773-42A6-87DA-9CABFF596D9D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dashboard.Domain", "Dashboard.Domain\Dashboard.Domain.csproj", "{12DF1B3A-B773-42A6-87DA-9CABFF596D9D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dashboard.Application", "Dashboard.Application\Dashboard.Application.csproj", "{27271B27-DDAD-4448-802B-2F2F4124577F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dashboard.Application", "Dashboard.Application\Dashboard.Application.csproj", "{27271B27-DDAD-4448-802B-2F2F4124577F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dashboard.Core", "Dashboard.Core\Dashboard.Core.csproj", "{19D863FB-7AD0-4971-BF5B-66F2BCA682E7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dashboard.Core", "Dashboard.Core\Dashboard.Core.csproj", "{19D863FB-7AD0-4971-BF5B-66F2BCA682E7}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dashboard.Infrastrcuture", "Dashboard.Infrastrcuture\Dashboard.Infrastrcuture.csproj", "{B89B8C0F-510B-4BF4-B881-89E3BD6F655C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dashboard.Infrastrcuture", "Dashboard.Infrastrcuture\Dashboard.Infrastrcuture.csproj", "{B89B8C0F-510B-4BF4-B881-89E3BD6F655C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,10 +23,6 @@ Global
 		{A254286B-7991-4297-813E-96D1DFB4ACDB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A254286B-7991-4297-813E-96D1DFB4ACDB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A254286B-7991-4297-813E-96D1DFB4ACDB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1C00280C-0CDC-4F28-B4E5-281B98392552}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1C00280C-0CDC-4F28-B4E5-281B98392552}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1C00280C-0CDC-4F28-B4E5-281B98392552}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1C00280C-0CDC-4F28-B4E5-281B98392552}.Release|Any CPU.Build.0 = Release|Any CPU
 		{12DF1B3A-B773-42A6-87DA-9CABFF596D9D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{12DF1B3A-B773-42A6-87DA-9CABFF596D9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{12DF1B3A-B773-42A6-87DA-9CABFF596D9D}.Release|Any CPU.ActiveCfg = Release|Any CPU

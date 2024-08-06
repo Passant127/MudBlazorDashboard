@@ -31,6 +31,13 @@ public partial class SideMenu
                 },
                 new()
                 {
+                    Title = "Employees",
+                    Icon = Icons.Material.Filled.Person,
+                    Href = "/employee",
+                    PageStatus = PageStatus.Completed
+                },
+                new()
+                {
                     Title = "Analytics",
                     Icon = Icons.Material.Filled.Analytics,
                     Href = "/analytics",

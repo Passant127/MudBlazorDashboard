@@ -1,7 +1,6 @@
 ﻿@page "/employee"
 
 
-<h3>Employees</h3>
 
 @using System.Net.Http.Json
 @using System.Threading
@@ -10,46 +9,19 @@
 @using Dashboard.Application.DTOS.EmployeeDtos
 @using Dashboard.Application.Services
 @using Dashboard.Core.Entities
-@using Dashboard.Core.Result
 @using Dashboard.Domain.Entities
+@inject IEmployeeService _employeeService
 
-
-<MudButton OnClick="AddItem" Color="Color.Success" Class="add-item-btn">Add Item</MudButton>
-<MudButton OnClick="RemoveItem" Color="Color.Error" Class="remove-item-btn">Remove Item</MudButton>
-
-<MudDataGrid @ref="dataGrid" T="Employee" ServerData="ServerReload" Filterable="false">
-    <ToolBarContent>
-        <MudText Typo="Typo.h6">Employees</MudText>
-        <MudSpacer />
-        <MudTextField T="string" ValueChanged="@(s => OnSearch(s))" Placeholder="Search" Adornment="Adornment.Start"
-                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
-    </ToolBarContent>
-    <Columns>
-        <PropertyColumn Property="x => x.Id" />
-        <PropertyColumn Property="x => x.FirstName" />
-        <PropertyColumn Property="x => x.LastName" />
-        <PropertyColumn Property="x => x.Email" />
-    </Columns>
-    <PagerContent>
-        <MudDataGridPager T="Employee" />
-    </PagerContent>
-</MudDataGrid>
-
-@page "/employee"
 
 <h3>Employees</h3>
 
-@using System.Net.Http.Json
-@using System.Threading
 
-@using Dashboard.Application.Services
-@using Dashboard.Core.Entities
-@using Dashboard.Domain.Entities
 
 <MudButton OnClick="AddItem" Color="Color.Success" Class="add-item-btn">Add Item</MudButton>
 <MudButton OnClick="RemoveItem" Color="Color.Error" Class="remove-item-btn">Remove Item</MudButton>
 
-<MudDataGrid @ref="dataGrid" T="Employee" ServerData="ServerReload" Filterable="false">
+
+<MudDataGrid @ref="dataGrid" T="EmployeeResponseDto" ServerData="ServerReload" Filterable="false">
     <ToolBarContent>
         <MudText Typo="Typo.h6">Employees</MudText>
         <MudSpacer />
@@ -63,25 +35,28 @@
         <PropertyColumn Property="x => x.Email" />
     </Columns>
     <PagerContent>
-        <MudDataGridPager T="Employee" />
+        <MudDataGridPager T="EmployeePage" />
     </PagerContent>
 </MudDataGrid>
 
 @code {
     private string searchString = null;
-    private MudDataGrid<Employee> dataGrid;
+    private MudDataGrid<EmployeeResponseDto> dataGrid;
 
-    private Result<List<Employee>> _items = new List<Employee>();
+    private List<EmployeeResponseDto> _items = new List<EmployeeResponseDto>();
 
-    [Inject]
-    private IEmployeeService _employeeService { get; set; }
 
-    protected override async Task<Result<List<Employee>>>  OnInitializedAsync()
+    protected override async Task  OnInitializedAsync()
     {
+        DateTime d1 = DateTime.Now;
         _items = await _employeeService.GetAllEmployeesAsync();
+        DateTime d2 = DateTime.Now;
+        Console.WriteLine(d2 - d1 );
+        Console.WriteLine($"list size : {_items.Count}" );
+        StateHasChanged();
     }
 
-    private async Task<GridData<Employee>> ServerReload(GridState<Employee> state)
+    private async Task<GridData<EmployeeResponseDto>> ServerReload(GridState<EmployeeResponseDto> state)
     {
         await Task.Delay(300);
 
@@ -115,7 +90,7 @@
             .Take(state.PageSize)
             .ToList();
 
-        return new GridData<Employee>
+        return new GridData<EmployeeResponseDto>
             {
                 TotalItems = filteredItems.Count,
                 Items = pagedData
@@ -130,14 +105,18 @@
 
     private async Task AddItem()
     {
-        var newEmployee = new EmployeeRequestDto({
+        var newEmployee = new EmployeeRequestDto{
                 FirstName = "Ahmed",
                 LastName = "Mohamed",
                 Email = "a@gmail.com"
-    });
-        await EmployeeService.AddEmployeeAsync(newEmployee);
-        _items = await EmployeeService.GetAllEmployeesAsync();
+    };
+        for(int i = 0 ; i < 20000; i++)
+        {
+            await _employeeService.AddEmployeeAsync(newEmployee);
+        }
+        _items = await _employeeService.GetAllEmployeesAsync();
         await dataGrid.ReloadServerData();
+        StateHasChanged();
     }
 
     private async Task RemoveItem()
@@ -145,8 +124,8 @@
         if (_items.Any())
         {
             var employeeToRemove = _items.First();
-            await EmployeeService.DeleteEmployeeAsync(employeeToRemove.Id);
-            _items = await EmployeeService.GetAllEmployeesAsync();
+            await _employeeService.DeleteEmployeeAsync(employeeToRemove.Id);
+            _items = await _employeeService.GetAllEmployeesAsync();
             await dataGrid.ReloadServerData();
         }
     }
