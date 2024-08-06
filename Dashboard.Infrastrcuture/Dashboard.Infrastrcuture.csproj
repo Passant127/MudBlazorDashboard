@@ -20,8 +20,4 @@
     </PackageReference>
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Dashboard.Core\Dashboard.Core.csproj" />
-  </ItemGroup>
-
 </Project>

@@ -1,0 +1,153 @@
+﻿@page "/employee"
+
+
+<h3>Employees</h3>
+
+@using System.Net.Http.Json
+@using System.Threading
+
+@using Dashboard.Application.Contracts
+@using Dashboard.Application.DTOS.EmployeeDtos
+@using Dashboard.Application.Services
+@using Dashboard.Core.Entities
+@using Dashboard.Core.Result
+@using Dashboard.Domain.Entities
+
+
+<MudButton OnClick="AddItem" Color="Color.Success" Class="add-item-btn">Add Item</MudButton>
+<MudButton OnClick="RemoveItem" Color="Color.Error" Class="remove-item-btn">Remove Item</MudButton>
+
+<MudDataGrid @ref="dataGrid" T="Employee" ServerData="ServerReload" Filterable="false">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Employees</MudText>
+        <MudSpacer />
+        <MudTextField T="string" ValueChanged="@(s => OnSearch(s))" Placeholder="Search" Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    </ToolBarContent>
+    <Columns>
+        <PropertyColumn Property="x => x.Id" />
+        <PropertyColumn Property="x => x.FirstName" />
+        <PropertyColumn Property="x => x.LastName" />
+        <PropertyColumn Property="x => x.Email" />
+    </Columns>
+    <PagerContent>
+        <MudDataGridPager T="Employee" />
+    </PagerContent>
+</MudDataGrid>
+
+@page "/employee"
+
+<h3>Employees</h3>
+
+@using System.Net.Http.Json
+@using System.Threading
+
+@using Dashboard.Application.Services
+@using Dashboard.Core.Entities
+@using Dashboard.Domain.Entities
+
+<MudButton OnClick="AddItem" Color="Color.Success" Class="add-item-btn">Add Item</MudButton>
+<MudButton OnClick="RemoveItem" Color="Color.Error" Class="remove-item-btn">Remove Item</MudButton>
+
+<MudDataGrid @ref="dataGrid" T="Employee" ServerData="ServerReload" Filterable="false">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Employees</MudText>
+        <MudSpacer />
+        <MudTextField T="string" ValueChanged="@(s => OnSearch(s))" Placeholder="Search" Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    </ToolBarContent>
+    <Columns>
+        <PropertyColumn Property="x => x.Id" />
+        <PropertyColumn Property="x => x.FirstName" />
+        <PropertyColumn Property="x => x.LastName" />
+        <PropertyColumn Property="x => x.Email" />
+    </Columns>
+    <PagerContent>
+        <MudDataGridPager T="Employee" />
+    </PagerContent>
+</MudDataGrid>
+
+@code {
+    private string searchString = null;
+    private MudDataGrid<Employee> dataGrid;
+
+    private Result<List<Employee>> _items = new List<Employee>();
+
+    [Inject]
+    private IEmployeeService _employeeService { get; set; }
+
+    protected override async Task<Result<List<Employee>>>  OnInitializedAsync()
+    {
+        _items = await _employeeService.GetAllEmployeesAsync();
+    }
+
+    private async Task<GridData<Employee>> ServerReload(GridState<Employee> state)
+    {
+        await Task.Delay(300);
+
+        var filteredItems = _items.Where(item =>
+        {
+            if (string.IsNullOrWhiteSpace(searchString))
+                return true;
+            return item.FirstName.Contains(searchString, StringComparison.OrdinalIgnoreCase) ||
+                   item.LastName.Contains(searchString, StringComparison.OrdinalIgnoreCase);
+        }).ToList();
+
+        // Handle sorting
+        var sortDefinition = state.SortDefinitions.FirstOrDefault();
+        if (sortDefinition != null)
+        {
+            filteredItems = sortDefinition.SortBy switch
+            {
+                nameof(Employee.FirstName) => filteredItems.OrderByDirection(
+                    sortDefinition.Descending ? SortDirection.Descending : SortDirection.Ascending,
+                    item => item.FirstName).ToList(),
+                nameof(Employee.LastName) => filteredItems.OrderByDirection(
+                    sortDefinition.Descending ? SortDirection.Descending : SortDirection.Ascending,
+                    item => item.LastName).ToList(),
+                _ => filteredItems
+            };
+        }
+
+        // Handle paging
+        var pagedData = filteredItems
+            .Skip(state.Page * state.PageSize)
+            .Take(state.PageSize)
+            .ToList();
+
+        return new GridData<Employee>
+            {
+                TotalItems = filteredItems.Count,
+                Items = pagedData
+            };
+    }
+
+    private async Task OnSearch(string text)
+    {
+        searchString = text;
+        await dataGrid.ReloadServerData();
+    }
+
+    private async Task AddItem()
+    {
+        var newEmployee = new EmployeeRequestDto({
+                FirstName = "Ahmed",
+                LastName = "Mohamed",
+                Email = "a@gmail.com"
+    });
+        await EmployeeService.AddEmployeeAsync(newEmployee);
+        _items = await EmployeeService.GetAllEmployeesAsync();
+        await dataGrid.ReloadServerData();
+    }
+
+    private async Task RemoveItem()
+    {
+        if (_items.Any())
+        {
+            var employeeToRemove = _items.First();
+            await EmployeeService.DeleteEmployeeAsync(employeeToRemove.Id);
+            _items = await EmployeeService.GetAllEmployeesAsync();
+            await dataGrid.ReloadServerData();
+        }
+    }
+}
