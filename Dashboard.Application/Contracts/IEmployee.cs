@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Clinic.Core.Result;
+using Dashboard.Application.DTOS.EmployeeDtos;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,20 +18,20 @@ public interface IEmployeeService
     /// </summary>
     /// <param name="employeeRequestDto">The data transfer object containing employee information.</param>
     /// <returns>A task representing the result of adding the employee successfully.</returns>
-    public Task<Result> AddDepartmentAsync(DepartmentRequestDto employeeRequestDto);
+    public Task<Result> AddEmployeeAsync(EmployeeRequestDto employeeRequestDto);
 
     /// <summary>
     /// Asynchronously retrieves all employees.
     /// </summary>
     /// <returns>A task representing the result of retrieving a list of employee response data transfer objects.</returns>
-    public Task<Result<PaginationResult<DepartmentResponseDto>>> GetAllDepartmentsAsync(int itemCount, int index);
+    public Task<Result<EmployeeResponseDto>> GetAllEmployeesAsync();
 
     /// <summary>
     /// Asynchronously retrieves a employee by its ID.
     /// </summary>
     /// <param name="id">The ID of the employee to retrieve.</param>
     /// <returns>A task representing the result of retrieving the employee response data transfer object.</returns>
-    public Task<Result<DepartmentResponseDto>> GetDepartmentByIdAsync(int id);
+    public Task<Result<EmployeeResponseDto>> GetEmployeeByIdAsync(Guid id);
 
     /// <summary>
     /// Asynchronously updates a employee by its ID.
@@ -37,19 +39,14 @@ public interface IEmployeeService
     /// <param name="id">The ID of the employee to update.</param>
     /// <param name="employeeRequestDto">The data transfer object containing updated employee information.</param>
     /// <returns>A task representing the result of updating the employee response data transfer object.</returns>
-    public Task<Result<DepartmentResponseDto>> UpdateDepartmentAsync(int id, DepartmentRequestDto employeeRequestDto);
+    public Task<Result<EmployeeResponseDto>> UpdateEmployeeAsync(Guid id, EmployeeRequestDto employeeRequestDto);
 
     /// <summary>
     /// Asynchronously deletes a employee by its ID.
     /// </summary>
     /// <param name="id">The ID of the employee to delete.</param>
     /// <returns>A task representing the result of deleting the employee successfully.</returns>
-    public Task<Result> DeleteDepartmentAsync(int id);
+    public Task<Result> DeleteEmployeeAsync(Guid id);
 
-    /// <summary>
-    /// Asynchronously searches for employees by name.
-    /// </summary>
-    /// <param name="text">The name of the employee to search for.</param>
-    /// <returns>A task representing the result of retrieving a list of employee response data transfer objects that match the search criteria.</returns>
-    public Task<Result<PaginationResult<DepartmentResponseDto>>> SearchDepartmentByTextAsync(string text, int itemCount, int index);
+  
 }
