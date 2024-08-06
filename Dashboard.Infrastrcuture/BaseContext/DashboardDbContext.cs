@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Dashboard.Core.Entities;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,6 +28,8 @@ public class DashboardDbContext : DbContext
 
         base.OnModelCreating(builder);
     }
- 
+
+    public DbSet<Employee> Employees { get; set; }
+
 
 }

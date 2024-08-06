@@ -1,12 +1,14 @@
-﻿using System;
+﻿using Dashboard.Core.Entities;
+using Dashboard.Domain.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Dashboard.Core.Entities;
+namespace Dashboard.Domain.Entities;
 
-public class Employee 
+public class Employee  : BaseEntity
 {
 
     public string FirstName { get; set; } = string.Empty;

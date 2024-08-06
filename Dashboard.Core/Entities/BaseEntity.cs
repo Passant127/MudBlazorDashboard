@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Dashboard.Domain.Entities;
+namespace Dashboard.Core.Entities;
 
 public class BaseEntity
 {
