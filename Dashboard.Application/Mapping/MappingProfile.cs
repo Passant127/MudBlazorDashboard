@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using Dashboard.Application.DTOS.EmployeeDtos;
-using Dashboard.Core.Entities;
+using Dashboard.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;

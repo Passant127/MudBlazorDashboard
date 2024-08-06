@@ -4,6 +4,7 @@ using Dashboard.Application.Contracts;
 using Dashboard.Application.DTOS.EmployeeDtos;
 using Dashboard.Core.Entities;
 using Dashboard.Core.Result;
+using Dashboard.Domain.Entities;
 using Dashboard.Infrastrcuture.BaseContext;
 using Microsoft.EntityFrameworkCore;
 using System;
