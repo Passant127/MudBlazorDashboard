@@ -24,7 +24,7 @@ public interface IEmployeeService
     /// Asynchronously retrieves all employees.
     /// </summary>
     /// <returns>A task representing the result of retrieving a list of employee response data transfer objects.</returns>
-    public Task<Result<EmployeeResponseDto>> GetAllEmployeesAsync();
+    public Task<Result<List<EmployeeResponseDto>>> GetAllEmployeesAsync();
 
     /// <summary>
     /// Asynchronously retrieves a employee by its ID.

@@ -15,7 +15,6 @@
     <Folder Include="Contracts\" />
     <Folder Include="DTOS\" />
     <Folder Include="ServiceExtensions\" />
-    <Folder Include="Services\" />
   </ItemGroup>
 
   <ItemGroup>
