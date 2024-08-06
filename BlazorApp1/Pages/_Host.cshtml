@@ -1,0 +1,17 @@
+﻿@page "/"
+@namespace BlazorApp1.Pages
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.JSInterop
+@using MudBlazor
+
+
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@{
+    Layout = "_Layout"; // This will use the layout defined in _Layout.cshtml
+}
+
+<div id="app">
+
+    <component type="typeof(App)" render-mode="Server" />
+</div>

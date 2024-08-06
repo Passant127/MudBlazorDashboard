@@ -1,0 +1,163 @@
+﻿@page "/user/profile"
+@inject ISnackbar Snackbar
+
+<MudText Class="align-center" Typo="Typo.h6">Profile</MudText>
+<MudBreadcrumbs Separator="." Items="_items"></MudBreadcrumbs>
+<br />
+<MudContainer>
+    <MudGrid>
+        <MudItem sm="12">
+            <MudPaper Class="p-20" Elevation="25" Style="height: 500px;">
+                <MudTabs Elevation="0" Centered="true" Rounded="true" PanelClass="pa-6" DisableRipple="true">
+                    <MudTabPanel Text="Profile" ToolTip="ToolTip One">
+                        @using System.ComponentModel.DataAnnotations
+
+                        <EditForm Model="@model" OnValidSubmit="OnValidSubmit">
+                            <DataAnnotationsValidator />
+                            <MudGrid>
+                                <MudItem xs="12" sm="7">
+                                    <MudCardContent>
+                                        <MudTextField Label="First name" HelperText="Max. 8 characters"
+                                                      @bind-Value="model.Username" For="@(() => model.Username)" />
+                                        <MudTextField Label="Email" Class="mt-3"
+                                                      @bind-Value="model.Email" For="@(() => model.Email)" />
+
+                                        <MudTextField Label="Password" HelperText="Choose a strong password" Class="mt-3"
+                                                      @bind-Value="model.Password" For="@(() => model.Password)" InputType="InputType.Password" />
+                                        <MudTextField Label="Password" HelperText="Repeat the password" Class="mt-3"
+                                                      @bind-Value="model.Password2" For="@(() => model.Password2)" InputType="InputType.Password" />
+
+                                    </MudCardContent>
+                                </MudItem>
+                            </MudGrid>
+                            <!-- Move the button outside of MudCardContent but still inside the MudTabPanel -->
+                        </EditForm>
+
+                        <!-- Align button to the right -->
+                        <div class="d-flex justify-end mt-2">
+                            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
+                                       @onclick="@(() => Snackbar.Add("Successfully Updated", Severity.Success))">Update</MudButton>
+                        </div>
+
+                    </MudTabPanel>
+                    <MudTabPanel Text="Followers" ToolTip="ToolTip Two">
+                        .<div class="d-flex justify-center align-center ms-20 ">
+
+                            <MudGrid>
+                                <MudItem>
+                                    <MudImage Width="300" Height="250" Fluid="true" Src="/sample-data/followers.jpg" />
+
+                                </MudItem>
+                                <MudItem>
+                                    <MudImage Width="300" Height="250" Fluid="true" Src="/sample-data/followers.jpg" />
+
+                                </MudItem>
+                                <MudItem>
+                                    <MudImage Width="300" Height="250" Fluid="true" Src="/sample-data/followers.jpg" />
+
+                                </MudItem>
+                            </MudGrid>
+                        </div>
+
+                    </MudTabPanel>
+
+                    <MudTabPanel Text="Gallery" ToolTip="ToolTip Three">
+
+                        <MudCarousel Class="mud-width-full" @ref="_carousel" ItemsSource="@_source" @bind-SelectedIndex="selectedIndex" Style="height:200px;" ShowArrows="@_arrows" ShowBullets="@_bullets" EnableSwipeGesture="@_enableSwipeGesture" AutoCycle="@_autocycle">
+                            <ItemTemplate>
+                                <div class="d-flex flex-column flex-column justify-center" style="height:100%">
+                                    <MudImage Height="500" Fluid="true" Src="https://www.worldatlas.com/r/w1200/upload/11/7d/f0/shutterstock-107014664.jpg" />
+                                 
+                                </div>
+                            </ItemTemplate>
+                        </MudCarousel>
+                        <MudSwitch @bind-Value="_arrows" Color="Color.Primary">Show Arrows</MudSwitch>
+                        <MudSwitch @bind-Value="_bullets" Color="Color.Primary">Show Bullets</MudSwitch>
+                        <MudSwitch @bind-Value="_enableSwipeGesture" Color="Color.Primary">Enable Swap Gesture</MudSwitch>
+                        <MudSwitch @bind-Value="_autocycle" Color="Color.Primary">Auto Cycle (Default: 5 secs)</MudSwitch>
+                        <br />
+                        <MudButton Class="ma-2" Variant="Variant.Filled" Color="Color.Primary" OnClick="AddAsync">Add</MudButton>
+                        <MudButton Class="ma-2" Variant="Variant.Filled" Color="Color.Error" OnClick="@(async () => await DeleteAsync(_carousel.SelectedIndex))">Delete</MudButton>
+                        <MudSelect @bind-Value="selectedIndex" Label="@($"Selected Item (index: {selectedIndex})")">
+                            @{
+                                int index = 0;
+                                foreach (var item in _source)
+                                {
+                                    <MudSelectItem Value="@index">@item</MudSelectItem>
+
+                                    index++;
+                                }
+                            }
+                        </MudSelect>
+                       
+                            </MudTabPanel>
+                        </MudTabs>
+                    </MudPaper>
+                </MudItem>
+
+            </MudGrid>
+        </MudContainer>
+
+                                @code {
+        private List<BreadcrumbItem> _items = new List<BreadcrumbItem>
+    {
+        new BreadcrumbItem("Dashboard", href: "#"),
+        new BreadcrumbItem("User", href: "#"),
+        new BreadcrumbItem("Profile", href: null, disabled: true)
+    };
+
+        RegisterAccountForm model = new RegisterAccountForm();
+        bool success;
+
+        public class RegisterAccountForm
+        {
+            [Required]
+            [StringLength(8, ErrorMessage = "Name length can't be more than 8.")]
+            public string Username { get; set; } = "Admin";
+
+            [Required]
+            [EmailAddress]
+            public string Email { get; set; } = "ahmed@gmail.com";
+
+            [Required]
+            [StringLength(30, ErrorMessage = "Password must be at least 8 characters long.", MinimumLength = 8)]
+            public string Password { get; set; } = "*******************";
+
+            [Required]
+            [Compare(nameof(Password))]
+            public string Password2 { get; set; } = "*******************";
+        }
+
+        private void OnValidSubmit(EditContext context)
+        {
+            success = true;
+            StateHasChanged();
+        }
+
+
+        private MudCarousel<string> _carousel;
+        private bool _arrows = true;
+        private bool _bullets = true;
+        private bool _enableSwipeGesture = true;
+        private bool _autocycle = true;
+        private IList<string> _source = new List<string>() { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
+        private int selectedIndex = 2;
+
+        private async Task AddAsync()
+        {
+            _source.Add($"Item {_source.Count + 1}");
+            await Task.Delay(1);
+            _carousel.MoveTo(_source.Count - 1);
+        }
+
+        private async Task DeleteAsync(int index)
+        {
+            if (_source.Any())
+            {
+                _source.RemoveAt(index);
+                await Task.Delay(1);
+                _carousel.MoveTo(System.Math.Max(System.Math.Min(index, _source.Count - 1), 0));
+            }
+
+        }
+    }

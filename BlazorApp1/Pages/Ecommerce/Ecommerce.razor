@@ -1,0 +1,99 @@
+﻿@page "/ecommerce"
+
+<h3>Ecommerce</h3>
+
+@using System.Net.Http.Json
+@using System.Threading
+@using BlazorApp1.Models.Ecommerce
+
+<MudButton OnClick="AddItem" Color="Color.Success" Class="add-item-btn">Add Item</MudButton>
+<MudButton OnClick="RemoveItem" Color="Color.Error" Class="remove-item-btn">Remove Item</MudButton>
+
+<MudDataGrid @ref="dataGrid" T="EcommerceModel" ServerData="ServerReload" Filterable="false">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">EcommerceModels</MudText>
+        <MudSpacer />
+        <MudTextField T="string" ValueChanged="@(s => OnSearch(s))" Placeholder="Search" Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    </ToolBarContent>
+    <Columns>
+        <PropertyColumn Property="x => x.Product" />
+        <PropertyColumn Property="x => x.ProductId" />
+        <PropertyColumn Property="x => x.status" />
+    </Columns>
+    <PagerContent>
+        <MudDataGridPager T="EcommerceModel" />
+    </PagerContent>
+</MudDataGrid>
+
+@code {
+    private List<EcommerceModel> _items = new List<EcommerceModel>();
+    private string searchString = null;
+    private MudDataGrid<EcommerceModel> dataGrid;
+
+    protected override void OnInitialized()
+    {
+        for (var i = 0; i < 5; i++)
+            _items.Add(new EcommerceModel($"Value_{i}", i, EcommerceStatus.Cancelled));
+    }
+
+    private async Task<GridData<EcommerceModel>> ServerReload(GridState<EcommerceModel> state)
+    {
+        await Task.Delay(300);
+
+        var filteredItems = _items.Where(item =>
+        {
+            if (string.IsNullOrWhiteSpace(searchString))
+                return true;
+            return item.Product.Contains(searchString, StringComparison.OrdinalIgnoreCase);
+        }).ToList();
+
+        // Handle sorting
+        var sortDefinition = state.SortDefinitions.FirstOrDefault();
+        if (sortDefinition != null)
+        {
+            filteredItems = sortDefinition.SortBy switch
+            {
+                nameof(EcommerceModel.ProductId) => filteredItems
+                    .OrderByDirection(
+                        sortDefinition.Descending ? SortDirection.Descending : SortDirection.Ascending,
+                        item => item.ProductId
+                    ).ToList(),
+                _ => filteredItems
+            };
+        }
+
+        // Handle paging
+        var pagedData = filteredItems
+            .Skip(state.Page * state.PageSize)
+            .Take(state.PageSize)
+            .ToList();
+
+        return new GridData<EcommerceModel>
+            {
+                TotalItems = filteredItems.Count,
+                Items = pagedData
+            };
+    }
+
+    private Task OnSearch(string text)
+    {
+        searchString = text;
+        return dataGrid.ReloadServerData();
+    }
+
+    private async Task AddItem()
+    {
+        _items.Add(new EcommerceModel("New Item", _items.Count + 1, EcommerceStatus.Completed));
+        await dataGrid.ReloadServerData();
+    }
+
+    private async Task RemoveItem()
+    {
+        if (_items.Any())
+        {
+            _items.RemoveAt(0);
+            await dataGrid.ReloadServerData();
+        }
+    }
+}

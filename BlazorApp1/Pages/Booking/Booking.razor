@@ -1,0 +1,78 @@
+﻿@page "/booking"
+<h1 class="mb-5">
+	Find Hotel to stay <MudIcon Icon="@Icons.Material.Filled.Hotel" Title="Favorite" />
+</h1>
+
+<MudContainer Class="mb-4">
+	<MudGrid>
+	
+		<MudItem Class="d-flex flex-column">
+			<MudText>
+				Date
+			</MudText>
+			<MudDateRangePicker Label="Basic range picker" @bind-DateRange="_dateRange" />
+		</MudItem>
+		<MudItem Class="d-flex flex-column">
+			<MudText>
+				To
+			</MudText>
+			<MudField Label="Standard" Variant="Variant.Text">Some Content <MudIcon Icon="@Icons.Material.Outlined.LocationOn" Color="@Color.Secondary" /> AbuDahbi</MudField>
+		</MudItem>
+		<MudItem>
+			<MudButton Variant="Variant.Filled" DropShadow="false" Color="Color.Secondary">Search</MudButton>
+		</MudItem>
+	</MudGrid>
+
+	<div class="my-5 d-flex align-end justify-around">
+		<MudText>
+			Lodging Available
+		</MudText>
+		<span style="color:cornflowerblue" class="ml-2">
+			View All
+		</span>
+	</div>
+
+	<MudGrid>
+		<MudItem>
+			<MudCard>
+				<MudCardMedia Image="https://content.jdmagicbox.com/comp/nagpur/z6/0712px712.x712.160712094546.c6z6/catalogue/hotel-shikara-ramtek-nagpur-hotels-3lyuhyn.jpeg" Height="200" />
+				<MudCardContent>
+					<MudText Typo="Typo.h5">Shikara Hotel</MudText>
+					<MudText Typo="Typo.body2"><MudIcon Icon="@Icons.Material.Outlined.LocationOn" Color="@Color.Secondary" />JI. Aston No.72</MudText>
+					<MudText Typo="Typo.h3"><b>$42.17</b>/night</MudText>
+				</MudCardContent>
+			</MudCard>
+		</MudItem>
+		<MudItem>
+			<MudCard>
+				<MudCardMedia Image="https://cf.bstatic.com/xdata/images/hotel/max1024x768/52418301.jpg?k=8258a174a10b329c04c13f0cfeadb798b751c8adb3acb204f413c141e4d538c7&o=&hp=1" Height="200" />
+				<MudCardContent>
+					<MudText Typo="Typo.h5">Visala Hotel</MudText>
+					<MudText Typo="Typo.body2"><MudIcon Icon="@Icons.Material.Outlined.LocationOn" Color="@Color.Secondary" />JI. Kebon No.72</MudText>
+					<MudText Typo="Typo.h3"><b>$38.42</b>/night</MudText>
+				</MudCardContent>
+			</MudCard>
+		</MudItem>
+		<MudItem>
+			<MudCard>
+				<MudCardMedia Image="https://www.alhadtha.com/UploadCache/libfiles/1/9/600x338o/861.png" Height="200" />
+				<MudCardContent>
+					<MudText Typo="Typo.h5">Um Kalthom Hotel</MudText>
+					<MudText Typo="Typo.body2"><MudIcon Icon="@Icons.Material.Outlined.LocationOn" Color="@Color.Secondary" />Zamalek</MudText>
+					<MudText Typo="Typo.h3"><b>$23.17</b>/night</MudText>
+				</MudCardContent>
+			</MudCard>
+		</MudItem>
+		
+	</MudGrid>
+
+
+</MudContainer>
+
+
+@code {
+	private MudDateRangePicker _picker;
+    private DateRange _dateRange = new DateRange(DateTime.Now.Date, DateTime.Now.AddDays(5).Date);
+
+
+}

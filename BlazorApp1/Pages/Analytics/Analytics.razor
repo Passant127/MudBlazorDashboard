@@ -1,0 +1,173 @@
+﻿@page "/analytics"
+
+@using MudBlazor.Components.Chart.Models
+
+<h3>Analytics</h3>
+
+<MudGrid>
+
+
+    <MudItem xs="12" md="12">
+        <MudCard>
+            <MudCardContent>
+                <MudChart ChartType="ChartType.Donut" Width="300px" Height="300px" InputData="@data" InputLabels="@labels">
+                    <CustomGraphics>
+                        <text class="donut-inner-text" x="47%" y="35%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="2">Total</text>
+                        <text class="donut-inner-text" x="47%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="5">@data.Sum().ToString()</text>
+                    </CustomGraphics>
+                </MudChart>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+
+
+    <MudItem xs="12" md="12">
+        <MudCard>
+            <MudCardContent>
+                <div>
+                    <MudChart ChartType="ChartType.StackedBar" ChartSeries="@Series2" @bind-SelectedIndex="Index" LegendPosition="@LegendPosition" XAxisLabels="@XAxisLabels2" Width="100%" Height="350px"></MudChart>
+                </div>
+                <MudText Typo="Typo.h6">Selected portion of the chart: @Index</MudText>
+
+                <div>
+                    <MudRadioGroup T="Position" @bind-Value="LegendPosition">
+                        <MudRadio Value="@(Position.Bottom)" Color="Color.Primary">Bottom</MudRadio>
+                        <MudRadio Value="@(Position.Top)" Color="Color.Primary">Top</MudRadio>
+                        <MudRadio Value="@(Position.Left)" Color="Color.Primary">Left</MudRadio>
+                        <MudRadio Value="@(Position.Right)" Color="Color.Primary">Right</MudRadio>
+                        <MudRadio Value="@(Position.Start)" Color="Color.Primary">Start</MudRadio>
+                        <MudRadio Value="@(Position.End)" Color="Color.Primary">End</MudRadio>
+                    </MudRadioGroup>
+                </div>
+
+
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+    <MudItem xs="12" md="6">
+        <MudCard>
+            <MudCardContent>
+                <MudChart ChartType="ChartType.Line" ChartSeries="@Series" XAxisLabels="@XAxisLabels" Width="100%" Height="350px" CanHideSeries />
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton Variant="Variant.Filled" @onclick="RandomizeData" Color="Color.Primary">Randomize Data</MudButton>
+            </MudCardActions>
+        </MudCard>
+    </MudItem>
+
+    <MudItem xs="12" md="6">
+        <MudCard Class="pb-9">
+            <MudCardContent>
+                <MudTimeSeriesChart ChartSeries="@_series" @bind-SelectedIndex="Index" Width="100%" Height="350px" ChartOptions="@_options" CanHideSeries TimeLabelSpacing="TimeSpan.FromMinutes(5)" />
+                <MudGrid>
+                    <MudItem xs="6">
+                        <MudText Typo="Typo.body1" Class="py-3">Selected: @(Index < 0 ? "None" : _series[Index].Name)</MudText>
+                    </MudItem>
+                    <MudItem xs="6">
+                        <MudSlider @bind-Value="_options.LineStrokeWidth" Min="1" Max="10" Color="Color.Info">Line Width: @_options.LineStrokeWidth.ToString()</MudSlider>
+                    </MudItem>
+                </MudGrid>
+            </MudCardContent>
+         
+        </MudCard>
+    </MudItem>
+
+   
+
+   
+</MudGrid>
+
+@code {
+    private int Index = -1; //default value cannot be 0 -> first selectedindex is 0.
+    private ChartOptions _options = new ChartOptions
+        {
+            YAxisLines = false,
+            YAxisTicks = 500,
+            MaxNumYAxisTicks = 10,
+            YAxisRequireZeroPoint = true,
+            XAxisLines = false,
+            LineStrokeWidth = 1,
+        };
+
+    private TimeSeriesChartSeries _chart1 = new();
+    private TimeSeriesChartSeries _chart2 = new();
+    private TimeSeriesChartSeries _chart3 = new();
+
+    private List<TimeSeriesChartSeries> _series = new();
+
+    private readonly Random _random = new Random();
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        RandomizeData();
+        var now = DateTime.Now;
+
+        _chart1 = new TimeSeriesChartSeries
+            {
+                Index = 0,
+                Name = "Series 1",
+                Data = Enumerable.Range(-360, 360).Select(x => new TimeSeriesChartSeries.TimeValue(now.AddSeconds(x * 10), _random.Next(6000, 15000))).ToList(),
+                IsVisible = true,
+                Type = TimeSeriesDiplayType.Line
+            };
+
+        _chart2 = new TimeSeriesChartSeries
+            {
+                Index = 1,
+                Name = "Series 2",
+                Data = Enumerable.Range(-360, 360).Select(x => new TimeSeriesChartSeries.TimeValue(now.AddSeconds(x * 10), _random.Next(0, 7000))).ToList(),
+                IsVisible = true,
+                Type = TimeSeriesDiplayType.Area
+            };
+
+        _chart3 = new TimeSeriesChartSeries
+            {
+                Index = 2,
+                Name = "Series 3",
+                Data = Enumerable.Range(-90, 60).Select(x => new TimeSeriesChartSeries.TimeValue(now.AddSeconds(x * 30), _random.Next(4000, 10000))).ToList(),
+                IsVisible = true,
+                Type = TimeSeriesDiplayType.Line
+            };
+
+        _series.Add(_chart1);
+        _series.Add(_chart2);
+        _series.Add(_chart3);
+
+        StateHasChanged();
+    }
+    public List<ChartSeries> Series = new List<ChartSeries>();
+    public string[] XAxisLabels = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep" };
+
+    private Random random = new Random();
+    public void RandomizeData()
+    {
+        var newSeries = new List<ChartSeries>();
+        for (int s = 1; s <= 10; s++)
+        {
+            var series = new ChartSeries() { Name = $"Series {s}", Data = new double[9] };
+            for (int i = 0; i < 9; i++)
+                series.Data[i] = random.NextDouble() * 100;
+            newSeries.Add(series);
+        }
+        Series = newSeries;
+        StateHasChanged();
+    }
+
+    public double[] data = { 25, 77, 28, 5 };
+    public string[] labels = { "Oil", "Coal", "Gas", "Biomass" };
+
+
+
+ 
+
+    private Position LegendPosition = Position.Bottom;
+
+    public List<ChartSeries> Series2 = new List<ChartSeries>()
+                {
+                new ChartSeries() { Name = "United States", Data = new double[] { 40, 20, 25, 27, 46, 60, 48, 80, 15 } },
+                new ChartSeries() { Name = "Germany", Data = new double[] { 19, 24, 35, 13, 28, 15, 13, 16, 31 } },
+                new ChartSeries() { Name = "Sweden", Data = new double[] { 8, 6, 11, 13, 4, 16, 10, 16, 18 } },
+                };
+    public string[] XAxisLabels2 = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep" };
+}
