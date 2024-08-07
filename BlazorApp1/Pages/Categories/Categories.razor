@@ -1,0 +1,115 @@
+﻿@page "/categories"
+
+@using System.Net.Http.Json
+@using System.Threading
+@using Bogus
+@using Dashboard.Application.Contracts
+@using Dashboard.Application.DTOS.CategoryDtos
+@using Dashboard.Application.Services
+@using Dashboard.Core.Entities
+@using Dashboard.Domain.Entities
+@inject ICategoryService _categoyService
+
+<h3>Categories</h3>
+
+<MudButton OnClick="AddItem" Color="Color.Success" Class="add-item-btn">Add Category </MudButton>
+<MudButton OnClick="RemoveItem" Color="Color.Error" Class="remove-item-btn">Remove Category </MudButton>
+
+
+<MudDataGrid @ref="dataGrid" T="CategoryResponseDto" ServerData="ServerReload" Filterable="false">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Employees</MudText>
+        <MudSpacer />
+        <MudTextField T="string" ValueChanged="@(s => OnSearch(s))" Placeholder="Search" Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    </ToolBarContent>
+    <Columns>
+        <PropertyColumn Property="x => x.Id" />
+        <PropertyColumn Property="x => x.Name" />
+ 
+    </Columns>
+    <PagerContent>
+        <MudDataGridPager T="CategoryResponseDto" />
+    </PagerContent>
+</MudDataGrid>
+
+
+@code {
+    private string searchString = null;
+    private MudDataGrid<CategoryResponseDto> dataGrid;
+
+    private List<CategoryResponseDto> _items = new List<CategoryResponseDto>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _items = await _categoyService.GetAllCategorysAsync();
+        await dataGrid.ReloadServerData();
+        StateHasChanged();
+    }
+
+    private async Task<GridData<CategoryResponseDto>> ServerReload(GridState<CategoryResponseDto> state)
+    {
+        await Task.Delay(300);
+
+        var filteredItems = _items.Where(item =>
+        {
+            if (string.IsNullOrWhiteSpace(searchString))
+                return true;
+            return item.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase);
+        }).ToList();
+
+        var sortDefinition = state.SortDefinitions.FirstOrDefault();
+        if (sortDefinition != null)
+        {
+            filteredItems = sortDefinition.SortBy switch
+            {
+                nameof(CategoryResponseDto.Name) => filteredItems.OrderByDirection(
+                    sortDefinition.Descending ? SortDirection.Descending : SortDirection.Ascending,
+                    item => item.Name).ToList(),
+
+                _ => filteredItems
+            };
+        }
+
+        // Handle paging
+        var pagedData = filteredItems
+            .Skip(state.Page * state.PageSize)
+            .Take(state.PageSize)
+            .ToList();
+
+        return new GridData<CategoryResponseDto>
+            {
+                TotalItems = filteredItems.Count,
+                Items = pagedData
+            };
+    }
+
+    private async Task OnSearch(string text)
+    {
+        searchString = text;
+        await dataGrid.ReloadServerData();
+    }
+
+    private async Task AddItem()
+    {
+
+        var faker = new Faker<CategoryRequestDto>()
+                .RuleFor(r => r.Name, f => f.Random.Word());
+
+        var records = faker.Generate(10000);
+        await _categoyService.AddCategoryAsync(records);
+        await OnInitializedAsync();
+    }
+
+    private async Task RemoveItem()
+    {
+        if (_items.Any())
+        {
+            var categoryToRemove = _items.First();
+            await _categoyService.DeleteCategoryAsync(categoryToRemove.Id);
+            _items = await _categoyService.GetAllCategorysAsync();
+            await dataGrid.ReloadServerData();
+        }
+    }
+
+}

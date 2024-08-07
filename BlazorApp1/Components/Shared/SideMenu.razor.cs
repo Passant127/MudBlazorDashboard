@@ -38,6 +38,20 @@ public partial class SideMenu
                 },
                 new()
                 {
+                    Title = "Products",
+                    Icon = Icons.Material.Filled.ShoppingCart,
+                    Href = "/products",
+                    PageStatus = PageStatus.Completed
+                },
+                new()
+                {
+                    Title = "Categories",
+                    Icon = Icons.Material.Filled.ShoppingCart,
+                    Href = "/categories",
+                    PageStatus = PageStatus.Completed
+                },
+                new()
+                {
                     Title = "Analytics",
                     Icon = Icons.Material.Filled.Analytics,
                     Href = "/analytics",
