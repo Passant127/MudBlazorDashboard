@@ -1,0 +1,136 @@
+﻿@page "/products"
+
+@using System.Net.Http.Json
+@using System.Threading
+@using Bogus
+@using Dashboard.Application.Contracts
+@using Dashboard.Application.DTOS.ProductDtos
+@using Dashboard.Application.Services
+@using Dashboard.Core.Entities
+@using Dashboard.Domain.Entities
+@inject IProductService _productService
+
+<h3>ProductPage</h3>
+
+<MudButton OnClick="AddItem" Color="Color.Success" Class="add-item-btn">Add Product </MudButton>
+<MudButton OnClick="RemoveItem" Color="Color.Error" Class="remove-item-btn">Remove Product </MudButton>
+
+
+<MudDataGrid @ref="dataGrid" T="ProductResponseDto" ServerData="ServerReload" Filterable="false">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Employees</MudText>
+        <MudSpacer />
+        <MudTextField T="string" ValueChanged="@(s => OnSearch(s))" Placeholder="Search" Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    </ToolBarContent>
+    <Columns>
+        <PropertyColumn Property="x => x.Id" />
+        <PropertyColumn Property="x => x.Name" />
+        <PropertyColumn Property="x => x.Description" />
+        <PropertyColumn Property="x => x.Price" />
+        <PropertyColumn Property="x => x.BrandName" />
+        <PropertyColumn Property="x => x.CategoryName" />
+        <PropertyColumn Property="x => x.VendorrName" />
+    </Columns>
+    <PagerContent>
+        <MudDataGridPager T="ProductResponseDto" />
+    </PagerContent>
+</MudDataGrid>
+
+@code {
+    private string searchString = null;
+    private MudDataGrid<ProductResponseDto> dataGrid;
+
+    private List<ProductResponseDto> _items = new List<ProductResponseDto>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _items = await _productService.GetAllProductsAsync();
+        await dataGrid.ReloadServerData();
+        StateHasChanged();
+    }
+
+    private async Task<GridData<ProductResponseDto>> ServerReload(GridState<ProductResponseDto> state)
+    {
+        await Task.Delay(300);
+
+        var filteredItems = _items.Where(item =>
+        {
+            if (string.IsNullOrWhiteSpace(searchString))
+                return true;
+            return item.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase) ||
+                   item.BrandName.Contains(searchString, StringComparison.OrdinalIgnoreCase) || 
+                   item.CategoryName.Contains(searchString, StringComparison.OrdinalIgnoreCase);
+        }).ToList();
+
+        var sortDefinition = state.SortDefinitions.FirstOrDefault();
+        if (sortDefinition != null)
+        {
+            filteredItems = sortDefinition.SortBy switch
+            {
+                nameof(ProductResponseDto.Name) => filteredItems.OrderByDirection(
+                    sortDefinition.Descending ? SortDirection.Descending : SortDirection.Ascending,
+                    item => item.Name).ToList(),
+                nameof(ProductResponseDto.Description) => filteredItems.OrderByDirection(
+                    sortDefinition.Descending ? SortDirection.Descending : SortDirection.Ascending,
+                    item => item.Description).ToList(),
+                nameof(ProductResponseDto.BrandName) => filteredItems.OrderByDirection(
+                    sortDefinition.Descending ? SortDirection.Descending : SortDirection.Ascending,
+                    item => item.BrandName).ToList(),
+                nameof(ProductResponseDto.CategoryName) => filteredItems.OrderByDirection(
+                    sortDefinition.Descending ? SortDirection.Descending : SortDirection.Ascending,
+                    item => item.CategoryName).ToList(),
+
+                _ => filteredItems
+            };
+        }
+
+        // Handle paging
+        var pagedData = filteredItems
+            .Skip(state.Page * state.PageSize)
+            .Take(state.PageSize)
+            .ToList();
+
+        return new GridData<ProductResponseDto>
+            {
+                TotalItems = filteredItems.Count,
+                Items = pagedData
+            };
+    }
+
+    private async Task OnSearch(string text)
+    {
+        searchString = text;
+        await dataGrid.ReloadServerData();
+    }
+
+    private async Task AddItem()
+    {
+        Guid brandidd = new Guid("526b624b-d8bb-4872-95d0-08dcb6fc58f3");
+        Guid categoryId = new Guid("5fb49dad-f06c-4180-b715-08dcb6fe1f14");
+        Guid vendorId = new Guid("695bbd38-4d16-4a5f-55c0-08dcb6fc534a");
+        var faker = new Faker<ProductRequestDto>()
+                .RuleFor(r => r.Name, f => f.Random.Word())
+                .RuleFor(r => r.Description, f => f.Lorem.Sentence())
+                .RuleFor(r => r.Price, f => f.Random.UShort())
+                .RuleFor(r => r.BrandId, brandidd).
+                RuleFor(r => r.CategoryId, categoryId)
+                .RuleFor(r => r.VendorId, vendorId)
+                ;
+
+        var records = faker.Generate(10000);
+        await _productService.AddProductAsync(records);
+        await OnInitializedAsync();
+    }
+
+    private async Task RemoveItem()
+    {
+        if (_items.Any())
+        {
+            var productToRemove = _items.First();
+            await _productService.DeleteProductAsync(productToRemove.Id);
+            _items = await _productService.GetAllProductsAsync();
+            await dataGrid.ReloadServerData();
+        }
+    }
+}

@@ -13,8 +13,9 @@ public class ProductRequestDto
     public string Description { get; set; }
 
 
-    public float Price { get; set; }
+    public int Price { get; set; }
 
+    public Guid VendorId { get; set; }
     public Guid CategoryId { get; set; }
     public Guid BrandId { get; set; }
 

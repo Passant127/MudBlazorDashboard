@@ -55,8 +55,11 @@ builder.Services.AddDbContext<DashboardDbContext>(options => options.UseLazyLoad
 builder.Services.AddTransient<INotificationsService, NotificationsService>();
 builder.Services.AddTransient<IArticlesService, ArticlesService>();
 builder.Services.AddTransient<IEmployeeService, EmployeeService>();
+builder.Services.AddTransient<IProductService, ProductService>();
+builder.Services.AddTransient<IEmployeeService, EmployeeService>();
 builder.Services.AddTransient<IVendorService, VendorService>();
 builder.Services.AddTransient<IBrandService, BrandService>();
+builder.Services.AddTransient<ICategoryService, CategoryService>();
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 var app = builder.Build();
 
