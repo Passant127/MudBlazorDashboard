@@ -32,9 +32,6 @@ public class EmployeeService(DashboardDbContext dbContext , IMapper mapper) : IE
     public async Task DeleteEmployeeAsync(Guid id)
     {
         var employee = await _dbContext.Employees.FindAsync(id);
-
-       
-
         _dbContext.Employees.Remove(employee);
         await _dbContext.SaveChangesAsync();
 
