@@ -13,7 +13,10 @@ public class Product : BaseEntity
     public string Description { get; set; }
     public int Price { get; set; }
     public Guid CategoryId { get; set; }
-    public virtual Category Category { get; set; } = new Category();
+    public virtual Category Category { get; set; } 
     public Guid BrandId { get; set; }
-    public virtual Brand Brand { get; set; } = new Brand();
+    public virtual Brand Brand { get; set; }
+    public Guid VendorId { get; set; }
+    public virtual Vendor Vendor { get; set; } 
+
 }

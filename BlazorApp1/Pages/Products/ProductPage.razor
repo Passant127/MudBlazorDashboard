@@ -8,6 +8,7 @@
 @using Dashboard.Application.Services
 @using Dashboard.Core.Entities
 @using Dashboard.Domain.Entities
+@using System.Diagnostics
 @inject IProductService _productService
 
 <h3>ProductPage</h3>
@@ -30,7 +31,7 @@
         <PropertyColumn Property="x => x.Price" />
         <PropertyColumn Property="x => x.BrandName" />
         <PropertyColumn Property="x => x.CategoryName" />
-        <PropertyColumn Property="x => x.VendorrName" />
+        <PropertyColumn Property="x => x.VendorName" />
     </Columns>
     <PagerContent>
         <MudDataGridPager T="ProductResponseDto" />
@@ -45,9 +46,16 @@
 
     protected override async Task OnInitializedAsync()
     {
+        Stopwatch stopwatch = new Stopwatch();
+        stopwatch.Start();
         _items = await _productService.GetAllProductsAsync();
         await dataGrid.ReloadServerData();
         StateHasChanged();
+        stopwatch.Stop();
+        double elapsedSeconds = stopwatch.Elapsed.TotalSeconds;
+
+        Console.WriteLine(elapsedSeconds);
+        
     }
 
     private async Task<GridData<ProductResponseDto>> ServerReload(GridState<ProductResponseDto> state)
@@ -106,19 +114,19 @@
 
     private async Task AddItem()
     {
-        Guid brandidd = new Guid("526b624b-d8bb-4872-95d0-08dcb6fc58f3");
-        Guid categoryId = new Guid("5fb49dad-f06c-4180-b715-08dcb6fe1f14");
-        Guid vendorId = new Guid("695bbd38-4d16-4a5f-55c0-08dcb6fc534a");
+        Guid brandidd = new Guid("69b6146f-9ec5-4497-adb6-08dcb6f7ea04");
+        Guid categoryId = new Guid("6be35188-ad0a-4920-dd8b-08dcb6f7e0aa");
+        Guid vendorId = new Guid("efb79dd6-fead-4e6f-f6bd-08dcb6f7e39d");
         var faker = new Faker<ProductRequestDto>()
                 .RuleFor(r => r.Name, f => f.Random.Word())
                 .RuleFor(r => r.Description, f => f.Lorem.Sentence())
                 .RuleFor(r => r.Price, f => f.Random.UShort())
-                .RuleFor(r => r.BrandId, brandidd).
-                RuleFor(r => r.CategoryId, categoryId)
-                .RuleFor(r => r.VendorId, vendorId)
+                .RuleFor(r => r.BrandId, f=>brandidd).
+                RuleFor(r => r.CategoryId, f=>categoryId)
+                .RuleFor(r => r.VendorId, f=>vendorId)
                 ;
 
-        var records = faker.Generate(10000);
+        var records = faker.Generate(150000);
         await _productService.AddProductAsync(records);
         await OnInitializedAsync();
     }

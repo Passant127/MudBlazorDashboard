@@ -24,7 +24,8 @@ public class MappingProfile : Profile
         CreateMap<ProductRequestDto, Product>().ReverseMap();
         CreateMap<Product, ProductResponseDto>()
             .ForMember(dest => dest.BrandName, opt => opt.MapFrom(src => src.Brand.Name))
-            .ForMember(dest=>dest.CategoryName,opt=>opt.MapFrom(src=>src.Category.Name)).ReverseMap();
+            .ForMember(dest=>dest.CategoryName,opt=>opt.MapFrom(src=>src.Category.Name))
+            .ForMember(des=>des.VendorName,opt=> opt.MapFrom(src=>src.Vendor.Name)).ReverseMap();
 
         CreateMap<CategoryRequestDto, Category>().ReverseMap();
         CreateMap<Category, CategoryResponseDto>().ReverseMap();
