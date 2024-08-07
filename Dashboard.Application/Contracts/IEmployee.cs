@@ -18,7 +18,7 @@ public interface IEmployeeService
     /// </summary>
     /// <param name="employeeRequestDto">The data transfer object containing employee information.</param>
     /// <returns>A task representing the result of adding the employee successfully.</returns>
-    public Task AddEmployeeAsync(EmployeeRequestDto employeeRequestDto);
+    public Task AddEmployeeAsync(List<EmployeeRequestDto> employeeRequestDto);
 
     /// <summary>
     /// Asynchronously retrieves all employees.

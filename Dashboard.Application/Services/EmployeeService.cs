@@ -18,10 +18,11 @@ public class EmployeeService(DashboardDbContext dbContext , IMapper mapper) : IE
     private readonly DashboardDbContext _dbContext = dbContext;
     private readonly IMapper _mapper = mapper;
 
-    public async Task AddEmployeeAsync(EmployeeRequestDto employeeRequestDto)
+
+    public async Task AddEmployeeAsync(List<EmployeeRequestDto> employeeRequestDto)
     {
-        var mappedEmployee = _mapper.Map<Employee>(employeeRequestDto);
-         await _dbContext.AddAsync(mappedEmployee);
+        var mappedEmployee = _mapper.Map<List<Employee>>(employeeRequestDto);
+         await _dbContext.AddRangeAsync(mappedEmployee);
        
         await _dbContext.SaveChangesAsync();
     

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 using static System.Net.Mime.MediaTypeNames;
@@ -27,6 +28,7 @@ public class DashboardDbContext : DbContext
     {
 
         //builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+      
 
         base.OnModelCreating(builder);
     }
