@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Dashboard.Application.DTOS.ProductDtos;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,7 +13,5 @@ public class VendorResponseDto
     public string Name { get; set; }
     public string PhoneNumber { get; set; }
 
-    public Guid ProductId { get; set; }
-
-    public string ProductName { get; set; }
+    public ICollection<ProductResponseDto>  Products { get; set; }
 }
