@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Dashboard.Application.Contracts;
 
-public interface IVendor
+public interface IVendorService
 {
     /// <summary>
     /// Asynchronously adds a new vendor.

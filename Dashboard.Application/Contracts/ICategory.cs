@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Dashboard.Application.Contracts;
 
-public interface ICategory
+public interface ICategoryService
 {
     /// <summary>
     /// Asynchronously adds a new category.

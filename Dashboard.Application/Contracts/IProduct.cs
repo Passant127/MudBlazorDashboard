@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Dashboard.Application.Contracts;
 
-public interface IProduct
+public interface IProductService
 {
     /// <summary>
     /// Asynchronously adds a new product.

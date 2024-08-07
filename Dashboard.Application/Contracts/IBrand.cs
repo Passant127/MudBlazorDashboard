@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Dashboard.Application.Contracts;
 
-public interface IBrand
+public interface IBrandService
 {
     /// <summary>
     /// Asynchronously adds a new brand.
