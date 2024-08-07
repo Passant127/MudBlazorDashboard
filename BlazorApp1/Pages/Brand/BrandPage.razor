@@ -1,0 +1,122 @@
+﻿@page "/brand"
+
+
+
+@using System.Net.Http.Json
+@using System.Threading
+
+
+@using Bogus
+@using Dashboard.Application.Contracts
+
+@using Dashboard.Application.DTOS.Brands
+@using Dashboard.Application.Services
+@using Dashboard.Core.Entities
+@using Dashboard.Domain.Entities
+@inject IBrandService _brandService
+
+
+<h3>Brands</h3>
+
+
+
+<MudButton OnClick="AddItem" Color="Color.Success" Class="add-item-btn">Add Item</MudButton>
+<MudButton OnClick="RemoveItem" Color="Color.Error" Class="remove-item-btn">Remove Item</MudButton>
+
+
+<MudDataGrid @ref="dataGrid" T="BrandResponseDto" ServerData="ServerReload" Filterable="false">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Brands</MudText>
+        <MudSpacer />
+        <MudTextField T="string" ValueChanged="@(s => OnSearch(s))" Placeholder="Search" Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    </ToolBarContent>
+    <Columns>
+        <PropertyColumn Property="x => x.Id" />
+        <PropertyColumn Property="x => x.Name" />
+
+    </Columns>
+    <PagerContent>
+        <MudDataGridPager T="BrandResponseDto" />
+    </PagerContent>
+</MudDataGrid>
+
+
+@code {
+    private string searchString = null;
+    private MudDataGrid<BrandResponseDto> dataGrid;
+
+    private List<BrandResponseDto> _items = new List<BrandResponseDto>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _items = await _brandService.GetAllBrandsAsync();
+        await dataGrid.ReloadServerData();
+        StateHasChanged();
+    }
+
+    private async Task<GridData<BrandResponseDto>> ServerReload(GridState<BrandResponseDto> state)
+    {
+        await Task.Delay(300);
+
+        var filteredItems = _items.Where(item =>
+        {
+            if (string.IsNullOrWhiteSpace(searchString))
+                return true;
+            return item.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase);
+        }).ToList();
+
+        // Handle sorting
+        var sortDefinition = state.SortDefinitions.FirstOrDefault();
+        if (sortDefinition != null)
+        {
+            filteredItems = sortDefinition.SortBy switch
+            {
+                nameof(Brand.Name) => filteredItems.OrderByDirection(
+                    sortDefinition.Descending ? SortDirection.Descending : SortDirection.Ascending,
+                    item => item.Name).ToList(),
+            
+            };
+        }
+
+        // Handle paging
+        var pagedData = filteredItems
+            .Skip(state.Page * state.PageSize)
+            .Take(state.PageSize)
+            .ToList();
+
+        return new GridData<BrandResponseDto>
+            {
+                TotalItems = filteredItems.Count,
+                Items = pagedData
+            };
+    }
+
+    private async Task OnSearch(string text)
+    {
+        searchString = text;
+        await dataGrid.ReloadServerData();
+    }
+
+    private async Task AddItem()
+    {
+
+        var faker = new Faker<BrandRequestDto>()
+                .RuleFor(r => r.Name, f => f.Lorem.Sentence());
+
+        var records = faker.Generate(10000);
+        await _brandService.AddBrandAsync(records);
+        await OnInitializedAsync();
+    }
+
+    private async Task RemoveItem()
+    {
+        if (_items.Any())
+        {
+            var brandToRemove = _items.First();
+            await _brandService.DeleteBrandAsync(brandToRemove.Id);
+            _items = await _brandService.GetAllBrandsAsync();
+            await dataGrid.ReloadServerData();
+        }
+    }
+}

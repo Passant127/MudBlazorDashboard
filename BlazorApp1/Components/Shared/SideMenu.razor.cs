@@ -36,6 +36,21 @@ public partial class SideMenu
                     Href = "/employee",
                     PageStatus = PageStatus.Completed
                 },
+                 new()
+                {
+                    Title = "Vendor",
+                    Icon = Icons.Material.Filled.Person,
+                    Href = "/vendor",
+                    PageStatus = PageStatus.Completed
+                },
+
+                  new()
+                {
+                    Title = "Brand",
+                    Icon = Icons.Material.Filled.Details,
+                    Href = "/brand",
+                    PageStatus = PageStatus.Completed
+                },
                 new()
                 {
                     Title = "Analytics",
