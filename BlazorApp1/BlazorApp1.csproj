@@ -19,7 +19,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Dashboard.Application\Dashboard.Application.csproj" />
-    <ProjectReference Include="..\Dashboard.Benchmark\Dashboard.Benchmark.csproj" />
   </ItemGroup>
 
 </Project>
