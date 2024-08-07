@@ -1,9 +1,12 @@
+using BenchmarkDotNet.Running;
 using BlazorApp1.Services.Articles;
 using BlazorApp1.Services.Notifications;
 using Blazored.LocalStorage;
 using Dashboard.Application.Contracts;
 using Dashboard.Application.Mapping;
 using Dashboard.Application.Services;
+using Dashboard.Benchmark;
+using Dashboard.Domain.Entities;
 using Dashboard.Infrastrcuture.BaseContext;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -30,6 +33,8 @@ builder.Services.AddSingleton(sp => new HttpClient(httpHandler)
     // Set a default base URL or configure as needed
 });
 
+
+var summary = BenchmarkRunner.Run<EmployeeServiceBenchmark>();
 
 builder.Services.AddMudServices();
 builder.Services.AddHotKeys();
