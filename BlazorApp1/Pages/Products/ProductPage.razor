@@ -5,6 +5,8 @@
 @using Bogus
 @using Dashboard.Application.Contracts
 @using Dashboard.Application.DTOS.ProductDtos
+@using Dashboard.Application.SearchingCriteria
+@using Dashboard.Application.SearchingCriteria.ProductSearchCriteria
 @using Dashboard.Application.Services
 @using Dashboard.Core.Entities
 @using Dashboard.Domain.Entities
@@ -19,12 +21,18 @@
 <MudButton OnClick="RemoveItem" Color="Color.Error" Class="remove-item-btn">Remove Product </MudButton>
 
 
-<MudDataGrid @ref="dataGrid" T="ProductResponseDto" ServerData="ServerReload" Filterable="false">
+<h5>Searching Criteria</h5>
+<MudGrid>
+    <MudTextField @bind-Value="productSearch.ProductName" OnBlur="GetSearchedItemsFromServer" Label="Product Name" Variant="Variant.Text"></MudTextField>
+    <MudTextField @bind-Value="productSearch.ProductDescription" OnBlur="GetSearchedItemsFromServer" Label="Product Description" Variant="Variant.Text"></MudTextField>
+    <MudTextField @bind-Value="productSearch.BrandName" OnBlur="GetSearchedItemsFromServer" Label="Product Brand" Variant="Variant.Text"></MudTextField>
+    <MudTextField @bind-Value="productSearch.CategoryName" OnBlur="GetSearchedItemsFromServer" Label="Product Category" Variant="Variant.Text"></MudTextField>
+    <MudTextField @bind-Value="productSearch.VendorName" OnBlur="GetSearchedItemsFromServer" Label="Vendor Name" Variant="Variant.Text"></MudTextField>
+</MudGrid>
+<MudDataGrid Items="@_items" T="ProductResponseDto"  Filterable="false">
     <ToolBarContent>
         <MudText Typo="Typo.h6">Employees</MudText>
         <MudSpacer />
-        <MudTextField T="string" ValueChanged="@(s => OnSearch(s))" Placeholder="Search" Adornment="Adornment.Start"
-                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
     </ToolBarContent>
     <Columns>
         <PropertyColumn Property="x => x.Id" />
@@ -42,9 +50,9 @@
 
 @code {
     private string searchString = null;
-    private MudDataGrid<ProductResponseDto> dataGrid;
 
     private List<ProductResponseDto> _items = new List<ProductResponseDto>();
+    private ProductSearchCriteria productSearch = new ProductSearchCriteria();
 
     protected override async Task OnInitializedAsync()
     {
@@ -58,70 +66,34 @@
         using (MiniProfiler.Current.Step("Render Data"))
         {
 
-            await dataGrid.ReloadServerData();
+            StateHasChanged();
+
         }
-        StateHasChanged();
         stopwatch.Stop();
         double elapsedSeconds = stopwatch.Elapsed.TotalSeconds;
 
         Console.WriteLine(elapsedSeconds);
-        
+
     }
 
-    private async Task<GridData<ProductResponseDto>> ServerReload(GridState<ProductResponseDto> state)
+    private void GetSearchedItemsFromServer()
     {
-        // await Task.Delay(300);
-
-        var filteredItems = _items.Where(item =>
+        using(MiniProfiler.Current.Step("Get Data on Search "))
         {
-            if (string.IsNullOrWhiteSpace(searchString))
-                return true;
-            return item.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase) ||
-                   item.BrandName.Contains(searchString, StringComparison.OrdinalIgnoreCase) || 
-                   item.CategoryName.Contains(searchString, StringComparison.OrdinalIgnoreCase);
-        }).ToList();
 
-        var sortDefinition = state.SortDefinitions.FirstOrDefault();
-        if (sortDefinition != null)
-        {
-            filteredItems = sortDefinition.SortBy switch
-            {
-                nameof(ProductResponseDto.Name) => filteredItems.OrderByDirection(
-                    sortDefinition.Descending ? SortDirection.Descending : SortDirection.Ascending,
-                    item => item.Name).ToList(),
-                nameof(ProductResponseDto.Description) => filteredItems.OrderByDirection(
-                    sortDefinition.Descending ? SortDirection.Descending : SortDirection.Ascending,
-                    item => item.Description).ToList(),
-                nameof(ProductResponseDto.BrandName) => filteredItems.OrderByDirection(
-                    sortDefinition.Descending ? SortDirection.Descending : SortDirection.Ascending,
-                    item => item.BrandName).ToList(),
-                nameof(ProductResponseDto.CategoryName) => filteredItems.OrderByDirection(
-                    sortDefinition.Descending ? SortDirection.Descending : SortDirection.Ascending,
-                    item => item.CategoryName).ToList(),
+                 _items= _productService.SearchOnProductAsync(productSearch).Result.ToList();
 
-                _ => filteredItems
-            };
         }
-
-        // Handle paging
-        var pagedData = filteredItems
-            .Skip(state.Page * state.PageSize)
-            .Take(state.PageSize)
-            .ToList();
-
-        return new GridData<ProductResponseDto>
-            {
-                TotalItems = filteredItems.Count,
-                Items = pagedData
-            };
+        StateHasChanged();
     }
 
-    private async Task OnSearch(string text)
+    
+
+    private async Task OnSearch()
     {
-        searchString = text;
-        await dataGrid.ReloadServerData();
+        GetSearchedItemsFromServer();
     }
-
+     
     private async Task AddItem()
     {
         Guid brandidd = new Guid("69b6146f-9ec5-4497-adb6-08dcb6f7ea04");
@@ -148,7 +120,6 @@
             var productToRemove = _items.First();
             await _productService.DeleteProductAsync(productToRemove.Id);
             _items = await _productService.GetAllProductsAsync();
-            await dataGrid.ReloadServerData();
         }
     }
 }
