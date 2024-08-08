@@ -1,5 +1,6 @@
 ﻿using Dashboard.Application.DTOS.ProductDtos;
 using Dashboard.Application.SearchingCriteria.ProductSearchCriteria;
+using Dashboard.Application.Sorting;
 
 
 namespace Dashboard.Application.Contracts;
@@ -17,13 +18,13 @@ public interface IProductService
     /// Asynchronously retrieves all products.
     /// </summary>
     /// <returns>A task representing the result of retrieving a list of product response data transfer objects.</returns>
-     Task<List<ProductResponseDto>> GetAllProductsAsync();
+     Task<List<ProductResponseDto>> GetAllProductsAsync(List<SortingDefinition> sortingDefinitions);
 
     /// <summary>
     /// Asynchronously retrieves pages of products.
     /// </summary>
     /// <returns>A task representing the result of retrieving a list of product depends on page.</returns>
-     Task<List<ProductResponseDto>> GetAllProductsAsync(int page, int count);
+     Task<List<ProductResponseDto>> GetAllProductsAsync(int page, int count , List<SortingDefinition> sortingDefinitions);
 
     /// <summary>
     /// Asynchronously retrieves a product by its ID.
@@ -52,7 +53,7 @@ public interface IProductService
     /// </summary>
     /// <param searchitem="text".A text in product name or description or brand name or category name or vendor name"</param>
     /// <returns>A task representing the result of getting list of products successfully.</returns>
-    Task <Tuple< List<ProductResponseDto> ,int >> SearchOnProductAsync(ProductSearchCriteria searchitem, int page = 0, int count = 100);
+    Task <Tuple< List<ProductResponseDto> ,int >> SearchOnProductAsync(ProductSearchCriteria searchitem, int page , int count  , List<SortingDefinition> sortingDefinitions);
 
     /// <summary>
     /// Asynchronously get products count.

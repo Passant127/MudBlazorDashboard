@@ -4,18 +4,21 @@ using Azure;
 using Dashboard.Application.Contracts;
 using Dashboard.Application.DTOS.ProductDtos;
 using Dashboard.Application.SearchingCriteria.ProductSearchCriteria;
+using Dashboard.Application.Sorting;
 using Dashboard.Domain.Entities;
 using Dashboard.Infrastrcuture.BaseContext;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 
 namespace Dashboard.Application.Services;
 
-public class ProductService(DashboardDbContext dbContext, IMapper mapper) : IProductService
+public class ProductService(DashboardDbContext dbContext, IMapper mapper , ISortingService sortingService) : IProductService
 {
     private readonly DashboardDbContext _dbContext = dbContext;
     private readonly IMapper _mapper = mapper;
+    private readonly ISortingService _sortingService = sortingService;
 
     public async Task AddProductAsync(List<ProductRequestDto> productRequestDto)
     {
@@ -33,19 +36,23 @@ public class ProductService(DashboardDbContext dbContext, IMapper mapper) : IPro
 
     }
 
-    public async Task<List<ProductResponseDto>> GetAllProductsAsync()
+    public async Task<List<ProductResponseDto>> GetAllProductsAsync(List<SortingDefinition> sortingDefinitions)
     {
         var products = await _dbContext.Products.ProjectTo<ProductResponseDto>(_mapper.ConfigurationProvider).ToListAsync();
-
-        return products;
+        var sortedProduct = await _sortingService.SortItems(products, sortingDefinitions);
+        if (sortedProduct == null)
+            return products;
+        return sortedProduct;
     }
 
-    public async Task<List<ProductResponseDto>> GetAllProductsAsync(int page, int count)
+    public async Task<List<ProductResponseDto>> GetAllProductsAsync(int page, int count , List<SortingDefinition> sortingDefinitions)
     {
-        var products = await _dbContext.Products.ProjectTo<ProductResponseDto>(_mapper.ConfigurationProvider)
+        var sortedProduct =  await GetAllProductsAsync(sortingDefinitions);
+
+        var products = sortedProduct
             .Skip(page*count)       
-            .Take(count)
-            .ToListAsync();
+            .Take(count).ToList();
+
         return products ;
 
     }
@@ -65,7 +72,7 @@ public class ProductService(DashboardDbContext dbContext, IMapper mapper) : IPro
        return await _dbContext.Products.CountAsync(); 
     }
 
-    public  async Task<Tuple<List<ProductResponseDto>, int>> SearchOnProductAsync(ProductSearchCriteria searchCriteria, int page , int count )
+    public  async Task<Tuple<List<ProductResponseDto>, int>> SearchOnProductAsync(ProductSearchCriteria searchCriteria, int page , int count , List<SortingDefinition> sortingDefinitions)
     {
         var query = _dbContext.Products.AsQueryable();
         var TotalItems = 0;
@@ -113,6 +120,7 @@ public class ProductService(DashboardDbContext dbContext, IMapper mapper) : IPro
             TotalItems += query.Count();
         }
 
+        var sortedProduct = await _sortingService.SortItems(query, sortingDefinitions);
 
         var products=await query.ProjectTo<ProductResponseDto>(_mapper.ConfigurationProvider)
              .Skip(page * count)

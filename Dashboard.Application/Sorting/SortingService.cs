@@ -9,7 +9,7 @@ namespace Dashboard.Application.Sorting;
 
 public class SortingService : ISortingService
 {
-    public List<T> SortItems<T>(IEnumerable<T> items, ICollection<SortingDefinition> sortDefinitions)
+    public async Task<List<T>> SortItems<T>(IEnumerable<T> items, ICollection<SortingDefinition> sortDefinitions)
     {
         if (sortDefinitions == null || sortDefinitions.Count == 0)
             return items.ToList();

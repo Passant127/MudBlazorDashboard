@@ -8,5 +8,5 @@ namespace Dashboard.Application.Sorting;
 
 public interface ISortingService
 {
-    List<T> SortItems<T>(IEnumerable<T> items, ICollection<SortingDefinition> sortDefinitions);
+    Task<List<T>> SortItems<T>(IEnumerable<T> items, ICollection<SortingDefinition> sortDefinitions);
 }

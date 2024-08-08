@@ -8,11 +8,13 @@
 @using Dashboard.Application.SearchingCriteria
 @using Dashboard.Application.SearchingCriteria.ProductSearchCriteria
 @using Dashboard.Application.Services
+@using Dashboard.Application.Sorting
 @using Dashboard.Core.Entities
 @using Dashboard.Domain.Entities
 @using System.Diagnostics
 @using StackExchange.Profiling
 @inject IProductService _productService
+@inject ISortingService _sortingService
 
 <h3>ProductPage</h3>
 
@@ -29,19 +31,19 @@
     <MudTextField @bind-Value="productSearch.VendorName" OnBlur="GetSearchedItemsFromServer" Label="Vendor Name" Variant="Variant.Text"></MudTextField>
 </MudGrid>
 
-<MudDataGrid Items="@_items" T="ProductResponseDto" Filterable="false" RowsPerPage="@ItemsPerPage">
+<MudDataGrid Items="@_items" T="ProductResponseDto" RowsPerPage="@ItemsPerPage" SortChanged="OnSortChanged">
     <ToolBarContent>
         <MudText Typo="Typo.h6">Products</MudText>
         <MudSpacer />
     </ToolBarContent>
     <Columns>
-        <PropertyColumn Property="x => x.Id" />
-        <PropertyColumn Property="x => x.Name" />
-        <PropertyColumn Property="x => x.Description" />
-        <PropertyColumn Property="x => x.Price" />
-        <PropertyColumn Property="x => x.BrandName" />
-        <PropertyColumn Property="x => x.CategoryName" />
-        <PropertyColumn Property="x => x.VendorName" />
+        <PropertyColumn Property="x => x.Id" Title="ID" />
+        <PropertyColumn Property="x => x.Name" Title="Name" />
+        <PropertyColumn Property="x => x.Description" Title="Description" />
+        <PropertyColumn Property="x => x.Price" Title="Price" />
+        <PropertyColumn Property="x => x.BrandName" Title="Brand" />
+        <PropertyColumn Property="x => x.CategoryName" Title="Category" />
+        <PropertyColumn Property="x => x.VendorName" Title="Vendor" />
     </Columns>
     <PagerContent>
         <MudPagination SelectedChanged="PaginationChanged" Count="@((_totalItemCount + ItemsPerPage - 1) / ItemsPerPage)" Class="pa-4" />
@@ -61,13 +63,14 @@
     private int CurrentPage = 1;
     private int ItemsPerPage = 10;
     private int _totalItemCount = 0;
+    private ICollection<MudBlazor.SortDefinition<ProductResponseDto>> _sortDefinitions;
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadProductsAsync(CurrentPage, ItemsPerPage);
+        await LoadProductsAsync(CurrentPage, ItemsPerPage, _sortDefinitions);
     }
 
-    private async Task LoadProductsAsync(int page, int itemsInPage)
+    private async Task LoadProductsAsync(int page, int itemsInPage, ICollection<MudBlazor.SortDefinition<ProductResponseDto>> sortDefinitions  )
     {
         Stopwatch stopwatch = new Stopwatch();
         stopwatch.Start();
@@ -78,7 +81,7 @@
             string.IsNullOrEmpty(productSearch.CategoryName) &&
             string.IsNullOrEmpty(productSearch.VendorName))
         {
-            _items = await _productService.GetAllProductsAsync(page - 1, itemsInPage);
+            _items = await _productService.GetAllProductsAsync(page - 1, itemsInPage, ConvertSortDefinitions(_sortDefinitions));
             using (MiniProfiler.Current.Step("Get products count"))
             {
                 _totalItemCount = await _productService.GetProductsCount();
@@ -86,10 +89,11 @@
         }
         else
         {
-            var returnedValues = await _productService.SearchOnProductAsync(productSearch, page - 1, itemsInPage);
+            var returnedValues = await _productService.SearchOnProductAsync(productSearch, page - 1, itemsInPage, ConvertSortDefinitions(_sortDefinitions));
             _totalItemCount = returnedValues.Item2;
             _items = returnedValues.Item1;
         }
+
 
         stopwatch.Stop();
         double elapsedSeconds = stopwatch.Elapsed.TotalSeconds;
@@ -101,19 +105,19 @@
     private async Task PaginationChanged(int pageNumber)
     {
         CurrentPage = pageNumber;
-        await LoadProductsAsync(CurrentPage, ItemsPerPage);
+        await LoadProductsAsync(CurrentPage, ItemsPerPage, _sortDefinitions);
     }
 
     private async Task ChangeItemPerPage(int newItemsPerPage)
     {
         ItemsPerPage = newItemsPerPage;
-        CurrentPage = 1; 
-        await LoadProductsAsync(CurrentPage, ItemsPerPage);
+        CurrentPage = 1;
+        await LoadProductsAsync(CurrentPage, ItemsPerPage, _sortDefinitions);
     }
 
     private async Task GetSearchedItemsFromServer()
     {
-        await LoadProductsAsync(CurrentPage, ItemsPerPage);
+        await LoadProductsAsync(CurrentPage, ItemsPerPage, _sortDefinitions);
     }
 
     private async Task AddItem()
@@ -131,7 +135,7 @@
 
         var records = faker.Generate(150000);
         await _productService.AddProductAsync(records);
-        await LoadProductsAsync(CurrentPage, ItemsPerPage);
+        await LoadProductsAsync(CurrentPage, ItemsPerPage, _sortDefinitions);
     }
 
     private async Task RemoveItem()
@@ -140,7 +144,26 @@
         {
             var productToRemove = _items.First();
             await _productService.DeleteProductAsync(productToRemove.Id);
-            await LoadProductsAsync(CurrentPage, ItemsPerPage);
+            await LoadProductsAsync(CurrentPage, ItemsPerPage, _sortDefinitions);
         }
+    }
+
+    private async void OnSortChanged(ICollection<MudBlazor.SortDefinition<ProductResponseDto>> sortDefinitions)
+    {
+        _sortDefinitions = sortDefinitions;
+        await LoadProductsAsync(CurrentPage, ItemsPerPage, _sortDefinitions);
+    }
+
+    public static List<SortingDefinition> ConvertSortDefinitions(ICollection<MudBlazor.SortDefinition<ProductResponseDto>> mudSortDefinitions)
+    {
+        if (mudSortDefinitions == null || !mudSortDefinitions.Any())
+        {
+            return new List<SortingDefinition>();
+        }
+        return mudSortDefinitions.Select(mudSortDef => new SortingDefinition
+            {
+                SortBy = mudSortDef.SortBy,
+                IsDescending = mudSortDef.Descending
+            }).ToList();
     }
 }
