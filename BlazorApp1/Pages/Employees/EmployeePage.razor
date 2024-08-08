@@ -63,6 +63,7 @@
         }).ToList();
 
 
+        //Convert
         var definition = ConvertSortDefinitions(state.SortDefinitions);
         // Handle sorting
         filteredItems = _sortingService.SortItems(filteredItems, definition);
