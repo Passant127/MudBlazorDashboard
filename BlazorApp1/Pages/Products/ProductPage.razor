@@ -14,24 +14,24 @@
 @using StackExchange.Profiling
 @inject IProductService _productService
 
-
 <h3>ProductPage</h3>
 
-<MudButton OnClick="AddItem" Color="Color.Success" Class="add-item-btn">Add Product </MudButton>
-<MudButton OnClick="RemoveItem" Color="Color.Error" Class="remove-item-btn">Remove Product </MudButton>
-
+<MudButton OnClick="AddItem" Color="Color.Success" Class="add-item-btn">Add Product</MudButton>
+<MudButton OnClick="RemoveItem" Color="Color.Error" Class="remove-item-btn">Remove Product</MudButton>
 
 <h5>Searching Criteria</h5>
-<MudGrid>
+
+<MudGrid class="ml-2 my-5">
     <MudTextField @bind-Value="productSearch.ProductName" OnBlur="GetSearchedItemsFromServer" Label="Product Name" Variant="Variant.Text"></MudTextField>
     <MudTextField @bind-Value="productSearch.ProductDescription" OnBlur="GetSearchedItemsFromServer" Label="Product Description" Variant="Variant.Text"></MudTextField>
     <MudTextField @bind-Value="productSearch.BrandName" OnBlur="GetSearchedItemsFromServer" Label="Product Brand" Variant="Variant.Text"></MudTextField>
     <MudTextField @bind-Value="productSearch.CategoryName" OnBlur="GetSearchedItemsFromServer" Label="Product Category" Variant="Variant.Text"></MudTextField>
     <MudTextField @bind-Value="productSearch.VendorName" OnBlur="GetSearchedItemsFromServer" Label="Vendor Name" Variant="Variant.Text"></MudTextField>
 </MudGrid>
-<MudDataGrid Items="@_items" T="ProductResponseDto"  Filterable="false">
+
+<MudDataGrid Items="@_items" T="ProductResponseDto" Filterable="false" RowsPerPage="@ItemsPerPage">
     <ToolBarContent>
-        <MudText Typo="Typo.h6">Employees</MudText>
+        <MudText Typo="Typo.h6">Products</MudText>
         <MudSpacer />
     </ToolBarContent>
     <Columns>
@@ -44,56 +44,78 @@
         <PropertyColumn Property="x => x.VendorName" />
     </Columns>
     <PagerContent>
-        <MudDataGridPager T="ProductResponseDto" />
+        <MudPagination SelectedChanged="PaginationChanged" Count="@((_totalItemCount + ItemsPerPage - 1) / ItemsPerPage)" Class="pa-4" />
+        <MudSelect T="int" @bind-Value="ItemsPerPage" Label="Items Per Page" Variant="Variant.Text" SelectedValueChanged="ChangeItemPerPage">
+            <MudSelectItem Value="10">10</MudSelectItem>
+            <MudSelectItem Value="25">25</MudSelectItem>
+            <MudSelectItem Value="50">50</MudSelectItem>
+            <MudSelectItem Value="75">75</MudSelectItem>
+            <MudSelectItem Value="100">100</MudSelectItem>
+        </MudSelect>
     </PagerContent>
 </MudDataGrid>
 
 @code {
-    private string searchString = null;
-
     private List<ProductResponseDto> _items = new List<ProductResponseDto>();
     private ProductSearchCriteria productSearch = new ProductSearchCriteria();
+    private int CurrentPage = 1;
+    private int ItemsPerPage = 10;
+    private int _totalItemCount = 0;
 
     protected override async Task OnInitializedAsync()
     {
-        Stopwatch stopwatch = new Stopwatch();
-        stopwatch.Start();
-        using (MiniProfiler.Current.Step("Get Data "))
-        {
-
-            _items = await _productService.GetAllProductsAsync(0,100);
-        }
-        using (MiniProfiler.Current.Step("Render Data"))
-        {
-
-            StateHasChanged();
-
-        }
-        stopwatch.Stop();
-        double elapsedSeconds = stopwatch.Elapsed.TotalSeconds;
-
-        Console.WriteLine(elapsedSeconds);
-
+        await LoadProductsAsync(CurrentPage, ItemsPerPage);
     }
 
-    private void GetSearchedItemsFromServer()
+    private async Task LoadProductsAsync(int page, int itemsInPage)
     {
-        using(MiniProfiler.Current.Step("Get Data on Search "))
+        Stopwatch stopwatch = new Stopwatch();
+        stopwatch.Start();
+
+        if (string.IsNullOrEmpty(productSearch.ProductName) &&
+            string.IsNullOrEmpty(productSearch.ProductDescription) &&
+            string.IsNullOrEmpty(productSearch.BrandName) &&
+            string.IsNullOrEmpty(productSearch.CategoryName) &&
+            string.IsNullOrEmpty(productSearch.VendorName))
         {
-
-                 _items= _productService.SearchOnProductAsync(productSearch).Result.ToList();
-
+            _items = await _productService.GetAllProductsAsync(page - 1, itemsInPage);
+            using (MiniProfiler.Current.Step("Get products count"))
+            {
+                _totalItemCount = await _productService.GetProductsCount();
+            }
         }
+        else
+        {
+            var returnedValues = await _productService.SearchOnProductAsync(productSearch, page - 1, itemsInPage);
+            _totalItemCount = returnedValues.Item2;
+            _items = returnedValues.Item1;
+        }
+
+        stopwatch.Stop();
+        double elapsedSeconds = stopwatch.Elapsed.TotalSeconds;
+        Console.WriteLine($"Elapsed Time: {elapsedSeconds}s");
+
         StateHasChanged();
     }
 
-    
-
-    private async Task OnSearch()
+    private async Task PaginationChanged(int pageNumber)
     {
-        GetSearchedItemsFromServer();
+        CurrentPage = pageNumber;
+        await LoadProductsAsync(CurrentPage, ItemsPerPage);
     }
-     
+
+    private async Task ChangeItemPerPage(int newItemsPerPage)
+    {
+        ItemsPerPage = newItemsPerPage;
+        CurrentPage = 1; 
+        await LoadProductsAsync(CurrentPage, ItemsPerPage);
+    }
+
+    private async Task GetSearchedItemsFromServer()
+    {
+        await LoadProductsAsync(CurrentPage, ItemsPerPage);
+    }
+
     private async Task AddItem()
     {
         Guid brandidd = new Guid("69b6146f-9ec5-4497-adb6-08dcb6f7ea04");
@@ -103,14 +125,13 @@
                 .RuleFor(r => r.Name, f => f.Random.Word())
                 .RuleFor(r => r.Description, f => f.Lorem.Sentence())
                 .RuleFor(r => r.Price, f => f.Random.UShort())
-                .RuleFor(r => r.BrandId, f=>brandidd).
-                RuleFor(r => r.CategoryId, f=>categoryId)
-                .RuleFor(r => r.VendorId, f=>vendorId)
-                ;
+                .RuleFor(r => r.BrandId, f => brandidd)
+                .RuleFor(r => r.CategoryId, f => categoryId)
+                .RuleFor(r => r.VendorId, f => vendorId);
 
         var records = faker.Generate(150000);
         await _productService.AddProductAsync(records);
-        await OnInitializedAsync();
+        await LoadProductsAsync(CurrentPage, ItemsPerPage);
     }
 
     private async Task RemoveItem()
@@ -119,7 +140,7 @@
         {
             var productToRemove = _items.First();
             await _productService.DeleteProductAsync(productToRemove.Id);
-            _items = await _productService.GetAllProductsAsync();
+            await LoadProductsAsync(CurrentPage, ItemsPerPage);
         }
     }
 }

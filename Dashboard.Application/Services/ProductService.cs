@@ -1,11 +1,13 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using Azure;
 using Dashboard.Application.Contracts;
 using Dashboard.Application.DTOS.ProductDtos;
 using Dashboard.Application.SearchingCriteria.ProductSearchCriteria;
 using Dashboard.Domain.Entities;
 using Dashboard.Infrastrcuture.BaseContext;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 
 
 namespace Dashboard.Application.Services;
@@ -38,9 +40,10 @@ public class ProductService(DashboardDbContext dbContext, IMapper mapper) : IPro
         return products;
     }
 
-    public async Task<List<ProductResponseDto>> GetAllProductsAsync(int page=0, int count=10)
+    public async Task<List<ProductResponseDto>> GetAllProductsAsync(int page, int count)
     {
-        var products = await _dbContext.Products.ProjectTo<ProductResponseDto>(_mapper.ConfigurationProvider).Skip(page*count)       
+        var products = await _dbContext.Products.ProjectTo<ProductResponseDto>(_mapper.ConfigurationProvider)
+            .Skip(page*count)       
             .Take(count)
             .ToListAsync();
         return products ;
@@ -56,62 +59,67 @@ public class ProductService(DashboardDbContext dbContext, IMapper mapper) : IPro
 
         return product;
     }
-    
-    public async Task<List<ProductResponseDto>> SearchOnProductAsync(ProductSearchCriteria searchCriteria)
+
+    public async Task<int> GetProductsCount()
+    {
+       return await _dbContext.Products.CountAsync(); 
+    }
+
+    public  async Task<Tuple<List<ProductResponseDto>, int>> SearchOnProductAsync(ProductSearchCriteria searchCriteria, int page , int count )
     {
         var query = _dbContext.Products.AsQueryable();
+        var TotalItems = 0;
         
         if (! string.IsNullOrEmpty(searchCriteria.ProductName))
         {
 
-            query.Where(x =>x.Name.Contains(searchCriteria.ProductName));
+           query =  query.Where(x =>x.Name.Contains(searchCriteria.ProductName));
+            TotalItems = query.Count();
         }
         if (!string.IsNullOrEmpty(searchCriteria.BrandName))
         {
 
-            query.Where(x => x.Brand.Name.Contains(searchCriteria.BrandName));
+           query =  query = query.Where(x => x.Brand.Name.Contains(searchCriteria.BrandName));
+            TotalItems += query.Count();
         }
         if (!string.IsNullOrEmpty(searchCriteria.CategoryName))
         {
 
-            query.Where(x => x.Category.Name.Contains(searchCriteria.CategoryName));
+            query = query.Where(x => x.Category.Name.Contains(searchCriteria.CategoryName));
+            TotalItems += query.Count();
         }
         if (!string.IsNullOrEmpty(searchCriteria.VendorName))
         {
 
-            query.Where(x => x.Vendor.Name.Contains(searchCriteria.VendorName));
+           query = query.Where(x => x.Vendor.Name.Contains(searchCriteria.VendorName));
+            TotalItems += query.Count();
         }
         if (!string.IsNullOrEmpty(searchCriteria.ProductDescription))
         {
 
-            query.Where(x => x.Description.Contains(searchCriteria.ProductDescription));
+            query = query.Where(x => x.Description.Contains(searchCriteria.ProductDescription));
+            TotalItems += query.Count();
         }
 
         if (!string.IsNullOrEmpty(searchCriteria.SearchTerm))
         {
-            query.Where(x =>
+            query = query.Where(x =>
               x.Name.Contains(searchCriteria.SearchTerm) ||
               x.Description.Contains(searchCriteria.SearchTerm) ||
               x.Brand.Name.Contains(searchCriteria.SearchTerm) ||
               x.Category.Name.Contains(searchCriteria.SearchTerm) ||
               x.Vendor.Name.Contains(searchCriteria.SearchTerm)
               );
+            TotalItems += query.Count();
         }
 
 
-        try
-        {
-            var result = await query.ToListAsync();
+        var products=await query.ProjectTo<ProductResponseDto>(_mapper.ConfigurationProvider)
+             .Skip(page * count)
+             .Take(count)
+             .ToListAsync();
 
-            Console.WriteLine(result); // Log or inspect the exception details
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.Message); // Log or inspect the exception details
-            throw;
-        }
-
-        return  await query.ProjectTo<ProductResponseDto>(_mapper.ConfigurationProvider).ToListAsync();
+        return Tuple.Create(products, TotalItems);
     }
 
     public async Task<ProductResponseDto> UpdateProductAsync(Guid id, ProductRequestDto productRequestDto)

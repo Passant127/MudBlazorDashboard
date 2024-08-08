@@ -52,5 +52,13 @@ public interface IProductService
     /// </summary>
     /// <param searchitem="text".A text in product name or description or brand name or category name or vendor name"</param>
     /// <returns>A task representing the result of getting list of products successfully.</returns>
-    Task<List<ProductResponseDto>> SearchOnProductAsync(ProductSearchCriteria searchitem );
+    Task <Tuple< List<ProductResponseDto> ,int >> SearchOnProductAsync(ProductSearchCriteria searchitem, int page = 0, int count = 100);
+
+    /// <summary>
+    /// Asynchronously get products count.
+    /// </summary>
+    /// <returns>A task representing the result of retrieving count product .</returns>
+     Task<int> GetProductsCount();
+
+
 }
