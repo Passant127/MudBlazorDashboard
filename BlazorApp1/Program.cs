@@ -60,6 +60,10 @@ builder.Services.AddTransient<IEmployeeService, EmployeeService>();
 builder.Services.AddTransient<IVendorService, VendorService>();
 builder.Services.AddTransient<IBrandService, BrandService>();
 builder.Services.AddTransient<ICategoryService, CategoryService>();
+builder.Services.AddMiniProfiler(options =>
+{
+    options.RouteBasePath = "/profiler"; 
+}).AddEntityFramework();
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 var app = builder.Build();
 
@@ -72,6 +76,7 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseMiniProfiler();
 
 app.UseStaticFiles();
 

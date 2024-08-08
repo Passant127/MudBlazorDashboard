@@ -9,7 +9,9 @@
 @using Dashboard.Core.Entities
 @using Dashboard.Domain.Entities
 @using System.Diagnostics
+@using StackExchange.Profiling
 @inject IProductService _productService
+
 
 <h3>ProductPage</h3>
 
@@ -48,8 +50,16 @@
     {
         Stopwatch stopwatch = new Stopwatch();
         stopwatch.Start();
-        _items = await _productService.GetAllProductsAsync();
-        await dataGrid.ReloadServerData();
+        using (MiniProfiler.Current.Step("Get Data "))
+        {
+
+            _items = await _productService.GetAllProductsAsync(0,100);
+        }
+        using (MiniProfiler.Current.Step("Render Data"))
+        {
+
+            await dataGrid.ReloadServerData();
+        }
         StateHasChanged();
         stopwatch.Stop();
         double elapsedSeconds = stopwatch.Elapsed.TotalSeconds;
@@ -60,7 +70,7 @@
 
     private async Task<GridData<ProductResponseDto>> ServerReload(GridState<ProductResponseDto> state)
     {
-        await Task.Delay(300);
+        // await Task.Delay(300);
 
         var filteredItems = _items.Where(item =>
         {

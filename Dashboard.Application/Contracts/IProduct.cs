@@ -23,6 +23,12 @@ public interface IProductService
     public Task<List<ProductResponseDto>> GetAllProductsAsync();
 
     /// <summary>
+    /// Asynchronously retrieves all products.
+    /// </summary>
+    /// <returns>A task representing the result of retrieving a list of product response data transfer objects.</returns>
+    public Task<List<ProductResponseDto>> GetAllProductsAsync(int page, int count);
+
+    /// <summary>
     /// Asynchronously retrieves a product by its ID.
     /// </summary>
     /// <param name="id">The ID of the product to retrieve.</param>

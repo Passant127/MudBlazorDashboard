@@ -37,6 +37,16 @@ public class ProductService(DashboardDbContext dbContext, IMapper mapper) : IPro
         return products;
     }
 
+    public async Task<List<ProductResponseDto>> GetAllProductsAsync(int page=0, int count=10)
+    {
+        var products = await _dbContext.Products.ProjectTo<ProductResponseDto>(_mapper.ConfigurationProvider)
+            .Skip(page*count)
+            .Take(count)
+            .ToListAsync();
+
+        return products;
+    }
+
     public async Task<ProductResponseDto> GetProductByIdAsync(Guid id)
     {
         var product = await _dbContext.Products
