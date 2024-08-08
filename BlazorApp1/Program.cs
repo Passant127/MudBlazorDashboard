@@ -4,6 +4,7 @@ using Blazored.LocalStorage;
 using Dashboard.Application.Contracts;
 using Dashboard.Application.Mapping;
 using Dashboard.Application.Services;
+using Dashboard.Application.Sorting;
 using Dashboard.Domain.Entities;
 using Dashboard.Infrastrcuture.BaseContext;
 using Microsoft.AspNetCore.Components;
@@ -54,12 +55,12 @@ builder.Services.AddDbContext<DashboardDbContext>(options => options.UseLazyLoad
 // Register your custom services
 builder.Services.AddTransient<INotificationsService, NotificationsService>();
 builder.Services.AddTransient<IArticlesService, ArticlesService>();
-builder.Services.AddTransient<IEmployeeService, EmployeeService>();
 builder.Services.AddTransient<IProductService, ProductService>();
 builder.Services.AddTransient<IEmployeeService, EmployeeService>();
 builder.Services.AddTransient<IVendorService, VendorService>();
 builder.Services.AddTransient<IBrandService, BrandService>();
 builder.Services.AddTransient<ICategoryService, CategoryService>();
+builder.Services.AddTransient<ISortingService, SortingService >();
 builder.Services.AddMiniProfiler(options =>
 {
     options.RouteBasePath = "/profiler"; 
