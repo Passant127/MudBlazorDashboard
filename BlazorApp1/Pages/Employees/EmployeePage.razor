@@ -5,9 +5,11 @@
 @using Dashboard.Application.Contracts
 @using Dashboard.Application.DTOS.EmployeeDtos
 @using Dashboard.Application.Services
+@using Dashboard.Application.Sorting
 @using Dashboard.Core.Entities
 @using Dashboard.Domain.Entities
 @inject IEmployeeService _employeeService
+@inject ISortingService _sortingService
 
 
 <h3>Employees</h3>
@@ -60,21 +62,11 @@
                    item.LastName.Contains(searchString, StringComparison.OrdinalIgnoreCase);
         }).ToList();
 
+
+        var definition = ConvertSortDefinitions(state.SortDefinitions);
         // Handle sorting
-        var sortDefinition = state.SortDefinitions.FirstOrDefault();
-        if (sortDefinition != null)
-        {
-            filteredItems = sortDefinition.SortBy switch
-            {
-                nameof(Employee.FirstName) => filteredItems.OrderByDirection(
-                    sortDefinition.Descending ? SortDirection.Descending : SortDirection.Ascending,
-                    item => item.FirstName).ToList(),
-                nameof(Employee.LastName) => filteredItems.OrderByDirection(
-                    sortDefinition.Descending ? SortDirection.Descending : SortDirection.Ascending,
-                    item => item.LastName).ToList(),
-                _ => filteredItems
-            };
-        }
+        filteredItems = _sortingService.SortItems(filteredItems, definition);
+
 
         // Handle paging
         var pagedData = filteredItems
@@ -117,5 +109,14 @@
             _items = await _employeeService.GetAllEmployeesAsync();
             await dataGrid.ReloadServerData();
         }
+    }
+
+    public static List<SortingDefinition> ConvertSortDefinitions(ICollection<MudBlazor.SortDefinition<EmployeeResponseDto>> mudSortDefinitions)
+    {
+        return mudSortDefinitions.Select(mudSortDef => new SortingDefinition
+            {
+                SortBy = mudSortDef.SortBy,
+                IsDescending = mudSortDef.Descending
+            }).ToList();
     }
 }
