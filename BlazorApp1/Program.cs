@@ -52,14 +52,14 @@ builder.Services.AddMudServices(config =>
 
 builder.Services.AddDbContext<DashboardDbContext>(options => options.UseLazyLoadingProxies().UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly("Dashboard.Infrastrcuture")));
 // Register your custom services
-builder.Services.AddTransient<INotificationsService, NotificationsService>();
-builder.Services.AddTransient<IArticlesService, ArticlesService>();
-builder.Services.AddTransient<IEmployeeService, EmployeeService>();
-builder.Services.AddTransient<IProductService, ProductService>();
-builder.Services.AddTransient<IEmployeeService, EmployeeService>();
-builder.Services.AddTransient<IVendorService, VendorService>();
-builder.Services.AddTransient<IBrandService, BrandService>();
-builder.Services.AddTransient<ICategoryService, CategoryService>();
+builder.Services.AddScoped<INotificationsService, NotificationsService>();
+builder.Services.AddScoped<IArticlesService, ArticlesService>();
+builder.Services.AddScoped<IEmployeeService, EmployeeService>();
+builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IEmployeeService, EmployeeService>();
+builder.Services.AddScoped<IVendorService, VendorService>();
+builder.Services.AddScoped<IBrandService, BrandService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddMiniProfiler(options =>
 {
     options.RouteBasePath = "/profiler"; 
