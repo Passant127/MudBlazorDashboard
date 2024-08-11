@@ -1,5 +1,7 @@
 ﻿using Dashboard.Application.DTOS.ProductDtos;
 using Dashboard.Application.SearchingCriteria.ProductSearchCriteria;
+using Dashboard.Application.SortingCriteria.ProductSortingCriteria;
+using Dashboard.Domain.Entities;
 
 
 namespace Dashboard.Application.Contracts;
@@ -23,7 +25,7 @@ public interface IProductService
     /// Asynchronously retrieves pages of products.
     /// </summary>
     /// <returns>A task representing the result of retrieving a list of product depends on page.</returns>
-     Task<List<ProductResponseDto>> GetAllProductsAsync(int page, int count);
+     Task<List<ProductResponseDto>> GetAllProductsAsync(int page, int count , ProductSortingCriteria productSortingCriteria);
 
     /// <summary>
     /// Asynchronously retrieves a product by its ID.
@@ -52,13 +54,18 @@ public interface IProductService
     /// </summary>
     /// <param searchitem="text".A text in product name or description or brand name or category name or vendor name"</param>
     /// <returns>A task representing the result of getting list of products successfully.</returns>
-    Task <Tuple< List<ProductResponseDto> ,int >> SearchOnProductAsync(ProductSearchCriteria searchitem, int page = 0, int count = 100);
+    Task <Tuple< List<ProductResponseDto> ,int >> SearchOnProductAsync(ProductSearchCriteria searchitem, int page , int count  , ProductSortingCriteria productSortingCriteria);
 
     /// <summary>
     /// Asynchronously get products count.
     /// </summary>
     /// <returns>A task representing the result of retrieving count product .</returns>
      Task<int> GetProductsCount();
+    /// <summary>
+    /// Asynchronously get Sorting Criteria .
+    /// </summary>
+    /// <returns>A task representing the result of retrieving Criteria product .</returns>
+     Task<IQueryable<Product>> GetSortingCriteria(ProductSortingCriteria productSortingCriteria);
 
 
 }

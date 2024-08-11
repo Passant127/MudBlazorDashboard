@@ -7,6 +7,7 @@
 @using Dashboard.Application.DTOS.ProductDtos
 @using Dashboard.Application.SearchingCriteria
 @using Dashboard.Application.SearchingCriteria.ProductSearchCriteria
+@using Dashboard.Application.SortingCriteria.ProductSortingCriteria
 @using Dashboard.Application.Services
 @using Dashboard.Core.Entities
 @using Dashboard.Domain.Entities
@@ -29,7 +30,7 @@
     <MudTextField @bind-Value="productSearch.VendorName" OnBlur="GetSearchedItemsFromServer" Label="Vendor Name" Variant="Variant.Text"></MudTextField>
 </MudGrid>
 
-<MudDataGrid Items="@_items" T="ProductResponseDto" Filterable="false" RowsPerPage="ItemsPerPage">
+<MudDataGrid T="ProductResponseDto" @ref="_dataGrid" Filterable="false" RowsPerPage="ItemsPerPage" ServerData="ServerReload">
     <ToolBarContent>
         <MudText Typo="Typo.h6">Products</MudText>
         <MudSpacer />
@@ -45,21 +46,22 @@
     </Columns>
     <PagerContent>
         <div class="d-flex align-center justify-center">
-        <MudPagination SelectedChanged="PaginationChanged" Count="@((_totalItemCount + ItemsPerPage - 1) / ItemsPerPage)" Class="pa-4" />
-        <MudSelect T="int" Label="Items Per Page" Variant="Variant.Text" ValueChanged="@(async s => await ChangeItemPerPage(s))">
-            <MudSelectItem Value="5">5</MudSelectItem>
-            <MudSelectItem Value="10">10</MudSelectItem>
-            <MudSelectItem Value="25">25</MudSelectItem>
-            <MudSelectItem Value="50">50</MudSelectItem>
-        </MudSelect>
+            <MudPagination SelectedChanged="PaginationChanged" Count="@((_totalItemCount + ItemsPerPage - 1) / ItemsPerPage)" Class="pa-4" />
+            <MudSelect T="int" Label="Items Per Page" Variant="Variant.Text" ValueChanged="@(async s => await ChangeItemPerPage(s))">
+                <MudSelectItem Value="5">5</MudSelectItem>
+                <MudSelectItem Value="10">10</MudSelectItem>
+                <MudSelectItem Value="25">25</MudSelectItem>
+                <MudSelectItem Value="50">50</MudSelectItem>
+            </MudSelect>
         </div>
-
     </PagerContent>
 </MudDataGrid>
 
 @code {
     private List<ProductResponseDto> _items = new List<ProductResponseDto>();
     private ProductSearchCriteria productSearch = new ProductSearchCriteria();
+    private ProductSortingCriteria productSortingCriteria = new ProductSortingCriteria();
+    private MudDataGrid<ProductResponseDto> _dataGrid;
     private int CurrentPage = 1;
     private int ItemsPerPage = 100;
     private int _totalItemCount = 0;
@@ -68,11 +70,19 @@
     {
         await LoadProductsAsync(CurrentPage, ItemsPerPage);
     }
-
-    private async Task LoadProductsAsync(int page, int itemsInPage)
+    private async Task<GridData<ProductResponseDto>> ServerReload(GridState<ProductResponseDto> state)
     {
-        Stopwatch stopwatch = new Stopwatch();
-        stopwatch.Start();
+        await OnSortChanged(state);
+        var pagedData = _items;
+        return new GridData<ProductResponseDto>
+        {
+                TotalItems = _totalItemCount,
+                Items = pagedData
+        };
+    }
+
+    private async Task LoadProductsAsync(int page, int itemsInPage )
+    {
 
         if (string.IsNullOrEmpty(productSearch.ProductName) &&
             string.IsNullOrEmpty(productSearch.ProductDescription) &&
@@ -80,7 +90,7 @@
             string.IsNullOrEmpty(productSearch.CategoryName) &&
             string.IsNullOrEmpty(productSearch.VendorName))
         {
-            _items = await _productService.GetAllProductsAsync(page - 1, itemsInPage);
+            _items = await _productService.GetAllProductsAsync(page - 1, itemsInPage , productSortingCriteria);
             using (MiniProfiler.Current.Step("Get products count"))
             {
                 _totalItemCount = await _productService.GetProductsCount();
@@ -88,14 +98,14 @@
         }
         else
         {
-            var returnedValues = await _productService.SearchOnProductAsync(productSearch, page - 1, itemsInPage);
-            _totalItemCount = returnedValues.Item2;
-            _items = returnedValues.Item1;
+            using (MiniProfiler.Current.Step("Get products count Test Sorting"))
+            {
+                var returnedValues = await _productService.SearchOnProductAsync(productSearch, page - 1, itemsInPage,productSortingCriteria);
+                _totalItemCount = returnedValues.Item2;
+                _items = returnedValues.Item1;
+            }
         }
 
-        stopwatch.Stop();
-        double elapsedSeconds = stopwatch.Elapsed.TotalSeconds;
-        Console.WriteLine($"Elapsed Time: {elapsedSeconds}s");
 
         StateHasChanged();
     }
@@ -105,6 +115,33 @@
         CurrentPage = pageNumber;
         await LoadProductsAsync(CurrentPage, ItemsPerPage);
     }
+    private async Task OnSortChanged(GridState<ProductResponseDto> state)
+    {
+        var sortDefinition = state.SortDefinitions.FirstOrDefault();
+        if (sortDefinition != null)
+        {
+            switch (sortDefinition.SortBy)
+            {
+                case nameof(ProductResponseDto.Name):
+                    productSortingCriteria.ProductName = (sortDefinition.Descending == true ? 2 : 1);
+
+                    break;
+                case nameof(ProductResponseDto.Description):
+                    productSortingCriteria.ProductDescription = (sortDefinition.Descending == true ? 2 : 1);
+                    break;
+                case nameof(ProductResponseDto.BrandName):
+                    productSortingCriteria.BrandName = (sortDefinition.Descending == true ? 2 : 1);
+                    break;
+                case nameof(ProductResponseDto.CategoryName):
+                    productSortingCriteria.CategoryName = (sortDefinition.Descending == true ? 2 : 1);
+                    break;
+                case nameof(ProductResponseDto.VendorName):
+                    productSortingCriteria.VendorName = (sortDefinition.Descending == true ? 2 : 1);
+                    break;
+            }
+        }
+       await LoadProductsAsync(CurrentPage, ItemsPerPage);
+    }
 
     private async Task ChangeItemPerPage(int newItemsPerPage)
     {
@@ -113,9 +150,9 @@
         await LoadProductsAsync(CurrentPage, ItemsPerPage);
     }
 
-    private async Task GetSearchedItemsFromServer()
+    private  Task GetSearchedItemsFromServer()
     {
-        await LoadProductsAsync(CurrentPage, ItemsPerPage);
+        return   _dataGrid.ReloadServerData();
     }
 
     private async Task AddItem()
