@@ -66,18 +66,14 @@
     private int ItemsPerPage = 100;
     private int _totalItemCount = 0;
 
-    protected override async Task OnInitializedAsync()
-    {
-        await LoadProductsAsync(CurrentPage, ItemsPerPage);
-    }
+
     private async Task<GridData<ProductResponseDto>> ServerReload(GridState<ProductResponseDto> state)
     {
         await OnSortChanged(state);
-        var pagedData = _items;
         return new GridData<ProductResponseDto>
         {
                 TotalItems = _totalItemCount,
-                Items = pagedData
+                Items = _items
         };
     }
 
@@ -91,6 +87,7 @@
             string.IsNullOrEmpty(productSearch.VendorName))
         {
             _items = await _productService.GetAllProductsAsync(page - 1, itemsInPage , productSortingCriteria);
+
             using (MiniProfiler.Current.Step("Get products count"))
             {
                 _totalItemCount = await _productService.GetProductsCount();
@@ -105,15 +102,12 @@
                 _items = returnedValues.Item1;
             }
         }
-
-
-        StateHasChanged();
     }
 
     private async Task PaginationChanged(int pageNumber)
     {
         CurrentPage = pageNumber;
-        await LoadProductsAsync(CurrentPage, ItemsPerPage);
+        await GetSearchedItemsFromServer();
     }
     private async Task OnSortChanged(GridState<ProductResponseDto> state)
     {
@@ -147,7 +141,7 @@
     {
         ItemsPerPage = newItemsPerPage;
         CurrentPage = 1; 
-        await LoadProductsAsync(CurrentPage, ItemsPerPage);
+        await GetSearchedItemsFromServer();
     }
 
     private  Task GetSearchedItemsFromServer()

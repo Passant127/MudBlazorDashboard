@@ -40,10 +40,10 @@ public class ProductService(DashboardDbContext dbContext, IMapper mapper) : IPro
 
     public async Task<List<ProductResponseDto>> GetAllProductsAsync(int page, int count , ProductSortingCriteria productSortingCriteria)
     {
-        var query = await GetSortingCriteria(productSortingCriteria);
-        if (!query.Any())
+        var query=_dbContext.Products.AsQueryable(); 
+        if (productSortingCriteria != null)
         {
-            query = _dbContext.Products;
+            query = await GetSortingCriteria(productSortingCriteria);
         }
         var products = await query.ProjectTo<ProductResponseDto>(_mapper.ConfigurationProvider)
             .Skip(page*count)       
