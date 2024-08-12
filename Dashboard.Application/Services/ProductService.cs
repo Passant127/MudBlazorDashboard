@@ -86,6 +86,7 @@ public class ProductService(DashboardDbContext dbContext, IMapper mapper) : IPro
         }
         if (productSortingCriteria.BrandName != 0)
         {
+            query = query.Include(x => x.Brand);
             query = (productSortingCriteria.BrandName == 1 ? query.OrderBy(x => x.Brand.Name) : query.OrderByDescending(x => x.Brand.Name));
         }
         if (productSortingCriteria.VendorName != 0)
@@ -98,8 +99,7 @@ public class ProductService(DashboardDbContext dbContext, IMapper mapper) : IPro
 
     public  async Task<Tuple<List<ProductResponseDto>, int>> SearchOnProductAsync(ProductSearchCriteria searchCriteria, int page , int count , ProductSortingCriteria productSortingCriteria)
     {
-        var query = _dbContext.Products.AsQueryable();
-        var queryOfSorting = await GetSortingCriteria(productSortingCriteria);
+        var query = await GetSortingCriteria(productSortingCriteria);
         var TotalItems = 0;
         
         if (! string.IsNullOrEmpty(searchCriteria.ProductName))
@@ -134,15 +134,13 @@ public class ProductService(DashboardDbContext dbContext, IMapper mapper) : IPro
             TotalItems += query.Count();
         }
 
-        var combinedquery = query.Union(queryOfSorting);
 
-
-        var products=await combinedquery.ProjectTo<ProductResponseDto>(_mapper.ConfigurationProvider)
+        var products=await query.ProjectTo<ProductResponseDto>(_mapper.ConfigurationProvider)
              .Skip(page * count)
              .Take(count)
              .ToListAsync();
 
-        return Tuple.Create(products, TotalItems);
+        return Tuple.Create(products, query.Count());
     }
 
     public async Task<ProductResponseDto> UpdateProductAsync(Guid id, ProductRequestDto productRequestDto)

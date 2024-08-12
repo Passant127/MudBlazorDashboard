@@ -54,8 +54,12 @@
                 <MudSelectItem Value="50">50</MudSelectItem>
             </MudSelect>
         </div>
-    </PagerContent>
+    </PagerContent> 
 </MudDataGrid>
+<div class="d-flex justify-end">
+    <span>Total Items Count : @_totalItemCount</span>
+
+</div>
 
 @code {
     private List<ProductResponseDto> _items = new List<ProductResponseDto>();
@@ -69,12 +73,15 @@
 
     private async Task<GridData<ProductResponseDto>> ServerReload(GridState<ProductResponseDto> state)
     {
-        await OnSortChanged(state);
-        return new GridData<ProductResponseDto>
+        using (MiniProfiler.Current.Step("Render whole page"))
         {
-                TotalItems = _totalItemCount,
-                Items = _items
-        };
+            await OnSortChanged(state);
+            return new GridData<ProductResponseDto>
+            {
+                    TotalItems = _totalItemCount,
+                    Items = _items
+            };
+        }
     }
 
     private async Task LoadProductsAsync(int page, int itemsInPage )
@@ -102,6 +109,7 @@
                 _items = returnedValues.Item1;
             }
         }
+        StateHasChanged();
     }
 
     private async Task PaginationChanged(int pageNumber)
@@ -109,8 +117,14 @@
         CurrentPage = pageNumber;
         await GetSearchedItemsFromServer();
     }
+
     private async Task OnSortChanged(GridState<ProductResponseDto> state)
     {
+        Console.WriteLine("productName" + productSortingCriteria.ProductName);
+        Console.WriteLine("Description" + productSortingCriteria.ProductDescription);
+        Console.WriteLine("VendorName" + productSortingCriteria.VendorName);
+        Console.WriteLine("BrandName" + productSortingCriteria.BrandName);
+        Console.WriteLine("CategoryName" + productSortingCriteria.CategoryName);
         var sortDefinition = state.SortDefinitions.FirstOrDefault();
         if (sortDefinition != null)
         {
@@ -134,7 +148,8 @@
                     break;
             }
         }
-       await LoadProductsAsync(CurrentPage, ItemsPerPage);
+        await LoadProductsAsync(CurrentPage, ItemsPerPage);
+        state.SortDefinitions.Clear();
     }
 
     private async Task ChangeItemPerPage(int newItemsPerPage)
@@ -146,7 +161,7 @@
 
     private  Task GetSearchedItemsFromServer()
     {
-        return   _dataGrid.ReloadServerData();
+        return _dataGrid.ReloadServerData();
     }
 
     private async Task AddItem()
