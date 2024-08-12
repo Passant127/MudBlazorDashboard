@@ -15,8 +15,9 @@ namespace Dashboard.Application.SortingCriteria.ProductSortingCriteria;
 public class ProductSortingCriteria
 {
     public int ProductName { get; set; } = 0;
-    public int BrandName { get; set; }
-    public int ProductDescription { get; set; }
-    public int CategoryName { get; set; }
-    public int VendorName { get; set; }
+    public int BrandName { get; set; }= 0;
+    public int Price { get; set; }= 0;
+    public int ProductDescription { get; set; } = 0;
+    public int CategoryName { get; set; } = 0;
+    public int VendorName { get; set; } = 0;
 }

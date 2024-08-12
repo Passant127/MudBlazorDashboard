@@ -132,7 +132,6 @@
             {
                 case nameof(ProductResponseDto.Name):
                     productSortingCriteria.ProductName = (sortDefinition.Descending == true ? 2 : 1);
-
                     break;
                 case nameof(ProductResponseDto.Description):
                     productSortingCriteria.ProductDescription = (sortDefinition.Descending == true ? 2 : 1);
@@ -145,6 +144,9 @@
                     break;
                 case nameof(ProductResponseDto.VendorName):
                     productSortingCriteria.VendorName = (sortDefinition.Descending == true ? 2 : 1);
+                    break;
+                case nameof(ProductResponseDto.Price):
+                    productSortingCriteria.Price = (sortDefinition.Descending == true ? 2 : 1);
                     break;
             }
         }

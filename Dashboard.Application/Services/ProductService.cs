@@ -72,26 +72,47 @@ public class ProductService(DashboardDbContext dbContext, IMapper mapper) : IPro
     public async Task<IQueryable<Product>> GetSortingCriteria(ProductSortingCriteria productSortingCriteria)
     {
         var query = _dbContext.Products.AsQueryable();
+        bool flag = false;
         if (productSortingCriteria.ProductName != 0)
         {
             query = (productSortingCriteria.ProductName == 1 ? query.OrderBy(x => x.Name) : query.OrderByDescending(x => x.Name));
+            flag = true;
         }
         if (productSortingCriteria.ProductDescription != 0)
         {
-            query = (productSortingCriteria.ProductDescription == 1 ? query.OrderBy(x => x.Description) : query.OrderByDescending(x => x.Description));
+            query = flag ==true?
+                (productSortingCriteria.ProductDescription == 1? ((IOrderedQueryable<Product>)query).ThenBy(x => x.Description) : ((IOrderedQueryable<Product>)query).ThenByDescending(x => x.Description)) :
+             (productSortingCriteria.ProductDescription == 1 ? query.OrderBy(x => x.Description) : query.OrderByDescending(x => x.Description));
+            flag = true;
         }
         if (productSortingCriteria.CategoryName != 0)
         {
-            query = (productSortingCriteria.CategoryName == 1 ? query.OrderBy(x => x.Category.Name) : query.OrderByDescending(x => x.Category.Name));
+            query = flag == true ?
+                (productSortingCriteria.CategoryName == 1 ? ((IOrderedQueryable<Product>)query).ThenBy(x => x.Category.Name) : ((IOrderedQueryable<Product>)query).ThenByDescending(x => x.Category.Name)) :
+             (productSortingCriteria.CategoryName == 1 ? query.OrderBy(x => x.Category.Name) : query.OrderByDescending(x => x.Category.Name));
+            flag = true;
         }
         if (productSortingCriteria.BrandName != 0)
         {
-            query = query.Include(x => x.Brand);
-            query = (productSortingCriteria.BrandName == 1 ? query.OrderBy(x => x.Brand.Name) : query.OrderByDescending(x => x.Brand.Name));
+
+            query = flag == true ?
+                (productSortingCriteria.BrandName == 1 ? ((IOrderedQueryable<Product>)query).ThenBy(x => x.Brand.Name) : ((IOrderedQueryable<Product>)query).ThenByDescending(x => x.Brand.Name)) :
+             (productSortingCriteria.BrandName == 1 ? query.OrderBy(x => x.Brand.Name) : query.OrderByDescending(x => x.Brand.Name));
+            flag = true;
         }
         if (productSortingCriteria.VendorName != 0)
         {
-            query = (productSortingCriteria.VendorName == 1 ? query.OrderBy(x => x.Vendor.Name) : query.OrderByDescending(x => x.Vendor.Name));
+
+            query = flag == true ?
+                (productSortingCriteria.VendorName == 1 ? ((IOrderedQueryable<Product>)query).ThenBy(x => x.Vendor.Name) : ((IOrderedQueryable<Product>)query).ThenByDescending(x => x.Vendor.Name)) :
+             (productSortingCriteria.VendorName == 1 ? query.OrderBy(x => x.Vendor.Name) : query.OrderByDescending(x => x.Vendor.Name));
+        }
+        if (productSortingCriteria.Price != 0)
+        {
+
+            query = flag == true ?
+                (productSortingCriteria.Price == 1 ? ((IOrderedQueryable<Product>)query).ThenBy(x => x.Price) : ((IOrderedQueryable<Product>)query).ThenByDescending(x => x.Price)) :
+             (productSortingCriteria.Price == 1 ? query.OrderBy(x => x.Price) : query.OrderByDescending(x => x.Price));
         }
         
         return  query;
@@ -111,7 +132,7 @@ public class ProductService(DashboardDbContext dbContext, IMapper mapper) : IPro
         if (!string.IsNullOrEmpty(searchCriteria.BrandName))
         {
 
-           query =  query = query.Where(x => x.Brand.Name.Contains(searchCriteria.BrandName));
+           query = query.Where(x => x.Brand.Name.Contains(searchCriteria.BrandName));
             TotalItems += query.Count();
         }
         if (!string.IsNullOrEmpty(searchCriteria.CategoryName))
